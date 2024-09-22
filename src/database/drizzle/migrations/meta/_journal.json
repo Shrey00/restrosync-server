@@ -1,0 +1,62 @@
+{
+  "version": "7",
+  "dialect": "postgresql",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "7",
+      "when": 1726145692281,
+      "tag": "0000_marvelous_whiplash",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1726394601730,
+      "tag": "0001_cooing_thunderbolts",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1726395988577,
+      "tag": "0002_steady_cobalt_man",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1726396972359,
+      "tag": "0003_mute_molly_hayes",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1726409451442,
+      "tag": "0004_wonderful_forge",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1726675208235,
+      "tag": "0005_elite_squadron_supreme",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1726818828838,
+      "tag": "0006_swift_pretty_boy",
+      "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1726818914660,
+      "tag": "0007_early_lionheart",
+      "breakpoints": true
+    }
+  ]
+}
