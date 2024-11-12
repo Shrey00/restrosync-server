@@ -1,0 +1,1 @@
+{"version":3,"file":"formatResponse.js","sourceRoot":"","sources":["../../src/utils/formatResponse.ts"],"names":[],"mappings":";;AAAA,iCAaC;AAbD,SAAwB,cAAc,CACpC,QAAmC,EACnC,IAAS;IAMT,MAAM,QAAQ,GAAiB;QAC7B,IAAI;QACJ,QAAQ,EAAE,QAAQ;KACnB,CAAC;IACF,OAAO,QAAQ,CAAC;AAClB,CAAC"}

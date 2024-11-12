@@ -17,6 +17,10 @@ import {
 } from "./api";
 import { AppError, handler } from "./utils/ErrorHandler";
 import cookieParser from "cookie-parser";
+
+// const envFile = process.env.NODE_ENV === 'production' ? '.env.production' : '.env.development';
+// dotenv.config({ path: envFile });
+
 const app = express();
 
 //Middlwares
@@ -48,7 +52,7 @@ app.use((err: AppError, req: Request, res: Response, next: NextFunction) => {
     .json({ statusCode: err.httpCode, name: err.name, desc: err.description });
 });
 
-const PORT = process.env.PORT ? process.env.PORT : 3000;
+const PORT = process.env.PORT ? process.env.PORT : 4000;
 app.listen(PORT, () => {
   console.log("server listening at " + PORT);
 });
