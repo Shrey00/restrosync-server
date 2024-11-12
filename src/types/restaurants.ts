@@ -1,22 +1,16 @@
 //types for restaurants and menu
 //@TODO - Set correct type for next_opening_time and next_closing_time
 export interface Restaurant {
+    id: string,
     name: string, 
     email: string
     contact: string
     countryCode: string, 
     description: string, 
     rating?: number,
-    address: {
-        address: string,
-        landmark: string,
-        city: string,
-        district: string,
-        latitude: number,
-        longitude: number
-    }
+    address?: string
     logo: string | null,
-    imgList: string[] | null,
+    images: string[],
     cuisineType: 'veg' | 'non-veg' | 'multi-cuisine',
     opensAt: string,
     closesAt: string, 

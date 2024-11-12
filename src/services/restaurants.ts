@@ -1,42 +1,63 @@
+import { Address } from "cluster";
 import { RestaurantRepository } from "../database/repository";
-import { RestaurantRequestBody } from '../types';
+import { Restaurant, RestaurantRequestBody } from "../types";
+import { DataListInstance } from "twilio/lib/rest/api/v2010/account/recording/addOnResult/payload/data";
 export class Restaurants {
   private repository: any;
   constructor() {
     this.repository = new RestaurantRepository();
   }
-  async postRestaurant(restaurant : RestaurantRequestBody) {
+  async postRestaurant(restaurant: Partial<RestaurantRequestBody>) {
     let {
-        userId,
-        name, 
-        email,
-        contact,
-        countryCode,
-        description,
-        rating,
-        address, 
-        logo,
-        imgList,
-        cuisineType,//veg,non-veg or multi-cuisine
-        opensAt,
-        closesAt,
-        acceptingOrders,
+      userId,
+      name,
+      email,
+      contact,
+      countryCode,
+      description,
+      logo,
+      images,
+      cuisineType,
+      opensAt,
+      closesAt,
+      acceptingOrders,
     } = restaurant;
-    this.repository.createRestaurant({
-        userId,
-        name,
-        email,
-        contact,
-        countryCode,
-        description,
-        rating,
-        address ,
-        logo,
-        imgList,
-        cuisineType,//veg,non-veg or multi-cuisine
-        opensAt,
-        closesAt,
-        acceptingOrders,
+    const data: Restaurants = this.repository.createRestaurant({
+      userId,
+      name,
+      email,
+      contact,
+      countryCode,
+      description,
+      logo,
+      images,
+      cuisineType,
+      opensAt,
+      closesAt,
+      acceptingOrders,
     });
+    return data;
+  }
+  async postAddress(address: Address) {
+    const data = this.repository(address);
+    if (data) return data;
+  }
+  async getRestaurant(restaurant: Partial<Restaurant>) {
+    const { id } = restaurant;
+    const data = this.repository.findRestaurant({ id });
+    if (data) return data;
+  }
+  async getRestaurantsByUsers(params: Partial<RestaurantRequestBody>) {
+    const { userId } = params;
+    const data = this.repository.findRestaurantsByUsers({ userId });
+    if (data) return data;
+  }
+  async getRestaurants(params: { softwareId: string }) {
+    const data = this.repository.findRestaurants(params);
+    return data;
+  }
+  async updateRestaurant(params: Partial<RestaurantRequestBody>) {
+    const data = this.repository.findAndUpdateRestaurant(params);
+    if (data) return data;
   }
 }

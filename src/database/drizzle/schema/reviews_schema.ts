@@ -5,6 +5,7 @@ import {
   char,
   text,
   real,
+  serial,
   json,
   smallint,
   timestamp,
@@ -12,12 +13,24 @@ import {
 
 import { restaurants } from "./restaurants_schema";
 import { users } from "./users_schema";
-import { menu } from './menu_schema';
+import { menu } from "./menu_schema";
 export const reviews = pgTable("reviews", {
-  id: uuid("id").primaryKey().defaultRandom(),
-  menuItemId: uuid("menu_item_id").references(()=> menu.id),
+  id: uuid("id").primaryKey().notNull(),
   userId: uuid("user_id").references(() => users.id),
-  restaurant_id: uuid("restaurant_id").references(() => restaurants.id),
+  menuItemId: uuid("menu_item_id").references(() => menu.id, {
+    onDelete: "no action",
+  }),
+  restaurantId: uuid("restaurant_id").references(() => restaurants.id, {
+    onDelete: "no action",
+  }),
   rating: smallint("rating").notNull(),
-  review: text("review").notNull(),
+  comment: text("comment").notNull(),
+  parentCommentId: uuid("parent_comment_id"),
+  createdAt: timestamp("created_at", { withTimezone: true, precision: 3 })
+    .defaultNow()
+    .notNull(),
+  updatedAt: timestamp("updated_at", { withTimezone: true, precision: 3 })
+    .defaultNow()
+    .notNull()
+    .$onUpdate(() => new Date()),
 });

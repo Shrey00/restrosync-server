@@ -1,0 +1,1 @@
+ALTER TABLE "restaurants" ALTER COLUMN "accepting_orders" SET DEFAULT false;
