@@ -1,4 +1,4 @@
-import { Request, Response } from "express";
+import { NextFunction, Request, Response } from "express";
 import { Router } from "express";
 import { Users } from "../services";
 import { auth } from "./middlewares/auth";
@@ -18,12 +18,17 @@ app.post("/signin", async (req: Request, res: Response) => {
   res.status(200).json(response);
 });
 
-app.get("/user", auth, async (req: Request, res: Response) => {
+app.get("/user", auth, async (req: Request, res: Response, next: NextFunction) => {
   console.log("request came")
-  let response : { data: Array<User>, newToken?:null | string};
-  const data = await users.getUser({ id: req.user?.id });
-  response = formatResponse(req.newToken, data);
-  res.status(200).json(response);
+  try {
+    let response : { data: Array<User>, newToken?:null | string};
+    const data = await users.getUser({ id: req.user?.id });
+    response = formatResponse(req.newToken, data);
+    res.status(200).json(response);
+  }catch(e) {
+    next(e);
+  }
+  
 });
 
 app.post("/refresh-token", async (req: Request, res: Response) => {

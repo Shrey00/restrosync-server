@@ -2,65 +2,102 @@ import db from "../connection";
 import { eq, inArray, sql } from "drizzle-orm";
 import { RestaurantRequestBody } from "../../types";
 import { restaurants } from "../drizzle/schema/restaurants_schema";
-import { address } from "../drizzle/schema/address_schema";
 import { orders } from "../drizzle/schema/orders_schema";
 import { menu } from "../drizzle/schema/menu_schema";
-import { orderItems } from "../drizzle/schema/order_items_schema";
+import { cart } from "../drizzle/schema/cart_schema";
+import { orderItems as orderItemsTable } from "../drizzle/schema/order_items_schema";
 import { AddressType } from "../../types";
 import { relationUsersRestaurants } from "../drizzle/schema/user_restaurant_relation_schema";
 import { restaurantUpload } from "../../api/middlewares/storage";
 import { AppError, handler } from "../../utils/ErrorHandler";
+import {
+  generateOrderId,
+  getTimestampPlusOneHour,
+} from "../../utils/generateOrderId";
+type OrderItemsData = {
+  items: {
+    menuId: string;
+    amount: number;
+    quantity: number;
+  }[];
+  totalPrice: number;
+}[];
 
+type OrderItemRowDataType = {
+  orderId: string;
+  status: string;
+  orderItem: string;
+  quantity: number;
+  amount: number;
+}[];
 export class OrdersRepository {
   async createOrder(params: any) {
-    const { userId, order_items, scheduledOrder, addressId, restaurantId } =
-      params;
+    const {
+      userId,
+      orderItems,
+      scheduledOrder,
+      address,
+      paymentMethod,
+      taxes,
+    } = params;
     try {
+      const deliveryCharges = 0;
       const orderItemIdArr: string[] = [];
-      order_items.forEach((item: any, index: number) => {
-        orderItemIdArr.push(item.id);
+      orderItems.forEach((item: any, index: number) => {
+        orderItemIdArr.push(item.menuId);
       });
       const response = await db.transaction(async (txn) => {
         // Step 1: Insert into orders table
-
-        const orderItemPrices = await txn
+        const orderItemsData = await txn
           .select({
-            items: sql`array_agg(${menu.sellingPrice})`,
-            totalPrice: sql`SUM(${menu.sellingPrice})`,
+            items: sql`json_agg(json_build_object('menuId',${menu.id},
+                                                  'amount',${menu.sellingPrice} * ${cart.quantity},
+                                                  'quantity',${cart.quantity}))`,
+            totalPrice: sql`SUM(${menu.sellingPrice} * ${cart.quantity})`,
           })
           .from(menu)
-          .where(inArray(menu.id, orderItemIdArr));
-       
-        // const [newOrder] = await txn
-        //   .insert(orders)
-        //   .values({
+          .where(inArray(menu.id, orderItemIdArr))
+          .innerJoin(cart, sql`${cart.menuItemId}=${menu.id}`);
+        const orderDetails = await txn
+          .insert(orders)
+          .values({
+            orderId: generateOrderId(),
+            customerId: userId,
+            taxes: 0,
+            deliveryCharges: 0,
+            totalAmount: orderItemsData[0].totalPrice,
+            paymentMethod: paymentMethod,
+            paymentStatus: paymentMethod === "COD" ? "Pending" : "Created",
+            scheduledAt: getTimestampPlusOneHour(),
+            address: address,
+          } as any)
+          .returning({
+            id: orders.id,
+            orderId: orders.orderId,
+            customerId: orders.customerId,
+            taxes: orders.taxes,
+            deliveryCharges: orders.deliveryCharges,
+            totalAmount: orders.totalAmount,
+            paymentMethod: orders.paymentMethod,
+            paymentStatus: orders.paymentStatus,
+            scheduledAt: orders.scheduledAt,
+            address: orders.address,
+          });
 
-        //     customerId: userId,
-        //     status: "pending",
-        //     totalAmount: orderItemPrices[0].totalPrice,
-        //     paymentMethod: "COD",
-        //     paymentStatus: "Created",
-        //     scheduledOrder,
-        //     address: addressId,
-        //   } as any)
-        //   .returning();
-
-        // Step 2: Insert into order_items table
-        //fetch the original price from the menu
-        //also if coupon code applied, fetch the of/////////+-fer detail and discount as per the coupon.
-        // calculate the final price of item
-
-        // await txn.insert(orderItems).values(
-        //   order_items.map((item: any,index: number) => ({
-        //     orderId: newOrder.id,
-        //     customerId: userId,
-        //     restaurantId: restaurantId,
-        //     status: "Pending",
-        //     orderItem: orderItemPrices[0],
-        //     quantity: item.quantity,
-        //     amount: item.finalPrice,
-        //     addNote: item.addNote,
-        //   }))
+        const orderItemsDataClean = [...orderItemsData] as OrderItemsData;
+        const orderItemsDetailsArr: any[] = [];
+        if (orderItemsDataClean[0].items.length > 0)
+          orderItemsDataClean[0].items.forEach((item) => {
+            orderItemsDetailsArr.push({
+              orderId: orderDetails[0].id,
+              status: "Pending",
+              orderItem: item.menuId,
+              quantity: item.quantity,
+              amount: item.amount,
+            });
+          });
+        await txn.insert(orderItemsTable).values(orderItemsDetailsArr as any[]);
+        return orderDetails;
       });
       return response;
     } catch (e) {

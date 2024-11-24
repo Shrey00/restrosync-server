@@ -22,7 +22,7 @@ export const cart = pgTable("cart", {
   userId: uuid("user_id")
     .notNull()
     .references(() => users.id),
-  itemId: uuid("item_id")
+  menuItemId: uuid("menu_item_id")
     .notNull()
     .references(() => menu.id),
   quantity: smallint("quantity").notNull().default(1),

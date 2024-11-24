@@ -13,7 +13,7 @@
 import { Request, response, Response } from "express";
 import { Router } from "express";
 import { Menu, Orders } from "../services";
-import { Restaurant } from '../types';
+import { Restaurant } from "../types";
 import { auth } from "./middlewares/auth";
 import path, { format } from "path";
 import { menuUpload as upload } from "./middlewares/storage";
@@ -24,17 +24,12 @@ import formatResponse from "../utils/formatResponse";
 const app = Router();
 const orders = new Orders();
 // Define the types for `req.files` fields
-app.post(
-  "/place-order",
-  auth, 
-  async (req: Request, res: Response) => {
-    const userId = req.user?.id;
-    const { order_items, scheduledOrder, addressId, restaurantId }  = req.body;
-    const response = await orders.postOrder({userId, order_items, scheduledOrder, addressId, restaurantId } )
-    const formattedResponse = formatResponse(req.newToken, response);
-    res.status(200).json(formattedResponse);
-  }
-);
+app.post("/place-order", auth, async (req: Request, res: Response) => {
+  const userId = req.user?.id;
+  const response = await orders.postOrder({ userId, ...req.body });
+  const formattedResponse = formatResponse(req.newToken, response);
+  res.status(200).json(formattedResponse);
+});
 
 // // URL - menu/restaurantId
 // app.get("/", async (req: Request, res: Response) => {

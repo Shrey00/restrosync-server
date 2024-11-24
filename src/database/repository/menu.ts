@@ -191,7 +191,7 @@ export class MenuRepository {
       return response;
     } catch (e) {
       if (e instanceof Error)
-        throw new AppError(500, e?.message, "DB error", false);
+        throw new AppError(500, e?.message, "DB error", true);
     }
   }
 

@@ -23,16 +23,15 @@ app.get("/get-menu-categories", async (req: Request, res: Response) => {
   res.status(200).json(formattedResponse);
 });
 
-// app.get("/app-categories", async (req: Request, res: Response) => {
-//   const response = await menu.getMenuCategories();
-//   res.status(200).json(response);
-// });
-
-app.post("/item/variants", async (req: Request, res: Response) => {
-  const { menuItemId } = req.body;
-  const response = await menu.getMenuVariants({ menuItemId });
-  const formattedResponse = formatResponse(req.newToken, response);
-  res.status(200).json(formattedResponse);
+app.post("/item/variants", async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { menuItemId } = req.body;
+    const response = await menu.getMenuVariants({ menuItemId });
+    const formattedResponse = formatResponse(req.newToken, response);
+    res.status(200).json(formattedResponse);
+  }catch(e) {
+    next(e)
+  }
 });
 
 app.post(

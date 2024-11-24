@@ -1,7 +1,7 @@
 export interface CartItem {
   restaurantId?: string;
   userId?: string;
-  itemId?: string;
+  menuItemId?: string;
   quantity?: number;
   finalPrice?: number;
 }

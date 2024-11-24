@@ -23,9 +23,6 @@ export const orders = pgTable("orders", {
   customerId: uuid("customer_id").references(() => users.id, {
     onDelete: "no action",
   }),
-  restaurantId: uuid("restaurant_id").references(() => restaurants.id, {
-    onDelete: "no action",
-  }),
   taxes: real("taxes"),
   deliveryCharges: real("delivery_charges"),
   deleted: boolean("deleted").default(false),
@@ -34,7 +31,7 @@ export const orders = pgTable("orders", {
     .$type<"COD" | "UPI" | "Debit Card" | "Credit Card" | "Net Banking">()
     .notNull(),
   paymentStatus: varchar("payment_status", { length: 50 }).$type<
-    "Created" | "Authorised" | "Captured" | "Refunded" | "Failed"
+    "Created" | "Authorised" | "Captured" | "Refunded" | "Failed" | "Pending"
   >(),
   scheduledOrder: boolean("scheduled_order").default(false), // use expected delivery time for schedule
   scheduledAt: timestamp("scheduled_at", {

@@ -7,13 +7,26 @@ export class Cart {
     this.repository = new CartRepository();
   }
   async postCartItem(params: CartItem) {
-    const {itemId, userId, restaurantId}= params;
+    const { userId, menuItemId, restaurantId } = params;
     const quantity = 1;
-    const response = await this.repository.insertCartItem({itemId, userId, quantity, restaurantId});
+    const response = await this.repository.insertCartItem({
+      menuItemId,
+      userId,
+      quantity,
+      restaurantId,
+    });
     return response;
   }
   async getCartItems(params: { userId: string }) {
     const response = await this.repository.findCartItems(params);
+    return response;
+  }
+  async patchQuantity(params: { itemId: string; quantity: number }) {
+    const response = await this.repository.updateQuantity(params);
+    return response;
+  }
+  async deleteCartItem(params: { itemId: string }) {
+    const response = await this.repository.deleteCartItem(params);
     return response;
   }
 }

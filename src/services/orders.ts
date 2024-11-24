@@ -12,15 +12,7 @@ export class Orders {
     this.repository = new OrdersRepository();
   }
   async postOrder(params: any) {
-    const { userId, order_items, scheduledOrder, addressId, restaurantId } =
-      params;
-    const response = await this.repository.createOrder({
-      userId,
-      order_items,
-      scheduledOrder,
-      addressId,
-      restaurantId,
-    });
+    const response = await this.repository.createOrder(params);
     return response;
   }
 }

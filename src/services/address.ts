@@ -14,6 +14,10 @@ export class Address {
     const response = await this.repository.updateAddress(params);
     return response;
   }
+  async patchSelectedAddress(params: { userId: string; addressId: string }) {
+    const response = await this.repository.updateAddressSelect(params);
+    return response;
+  }
   async getAddresses(params: { userId: string }) {
     const response = await this.repository.findAddressesByEntityId(params);
     return response;

@@ -63,7 +63,29 @@ export class AddressRepository {
           country: address.country,
           postalCode: address.postalCode,
           location: address.location,
+          selected: address.selected,
         });
+      return response;
+    } catch (e) {
+      if (e instanceof Error)
+        throw new AppError(500, e?.message, "DB error", true);
+    }
+  }
+
+  async updateAddressSelect(params: { userId: string; addressId: string }) {
+    try {
+      const response = await db.transaction(async (txn) => {
+        await txn
+          .update(address)
+          .set({ selected: false })
+          .where(sql`${address.userId}=${params.userId}`);
+        const response = await txn
+          .update(address)
+          .set({ selected: true })
+          .where(sql`${address.id}=${params.addressId}`)
+          .returning({ addressId: address.id });
+        return response;
+      });
       return response;
     } catch (e) {
       if (e instanceof Error)

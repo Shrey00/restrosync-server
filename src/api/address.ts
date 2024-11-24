@@ -17,7 +17,7 @@ const app = Router();
 const address = new Address();
 
 app.post("/add-address", auth, async (req: Request, res: Response) => {
-  console.log("REQUEST CVAME")
+  console.log("REQUEST CVAME");
   req.body.userId = req.user?.id;
   const response = await address.postAddress(req.body);
   const formattedResponse = formatResponse(req.newToken, response);
@@ -34,4 +34,17 @@ app.get("/get-addresses", auth, async (req: Request, res: Response) => {
   const formattedResponse = formatResponse(req.newToken, response);
   res.status(200).json(formattedResponse);
 });
+app.patch(
+  "/update-selected-address",
+  auth,
+  async (req: Request, res: Response) => {
+    const userId = req.user?.id;
+    const response = await address.patchSelectedAddress({
+      addressId: req.body.addressId as string,
+      userId: userId as string,
+    });
+    const formattedResponse = formatResponse(req.newToken, response);
+    res.status(200).json(formattedResponse);
+  }
+);
 export default app;

@@ -18,7 +18,7 @@ import {
 import { AppError, handler } from "./utils/ErrorHandler";
 import cookieParser from "cookie-parser";
 
-// const envFile = process.env.NODE_ENV === 'production' ? '.env.production' : '.env.development';
+// const envFile = process.env.NODE_ENV === 'development' ? '.env.development' : '.env.development';
 // dotenv.config({ path: envFile });
 
 const app = express();
@@ -47,6 +47,7 @@ app.use("/address", addressRoutes);
 app.use("/cart", cartRoutes);
 
 app.use((err: AppError, req: Request, res: Response, next: NextFunction) => {
+  console.log(err);
   res
     .status(err.httpCode)
     .json({ statusCode: err.httpCode, name: err.name, desc: err.description });

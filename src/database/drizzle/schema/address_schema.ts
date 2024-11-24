@@ -29,4 +29,5 @@ export const address = pgTable("address", {
   postalCode: text("postal_code").notNull(),
   location: point("point", { mode: "xy" }),
   type: varchar("type", { length: 40 }).$type<"Home" | "Office" | "Hotel">(),
+  selected: boolean("selected").default(false),
 });

@@ -55,7 +55,7 @@ export class Menu {
       restaurantId,
       queryParams,
     });
-    console.log("RESPONSE", data);
+    console.log("RESPONSE", data[0].items);
     if (data) return data;
   }
   async getMenuItemsCategoryWise(
@@ -67,7 +67,6 @@ export class Menu {
       restaurantId,
       queryParams,
     });
-    console.log("RESPONSE", data);
     if (data) return data;
   }
   async getMenuVariants(params: { menuItemId: string }) {
@@ -78,7 +77,7 @@ export class Menu {
     const data = await this.repository.createMenuItemVariants(params);
     if (data) return data;
   }
-  async deleteMenuItem(param: any) {
+  async deleteMenuItem(param: any) {  
     const data = await this.repository.deleteMenuItem();
     if (data) return data;
   }

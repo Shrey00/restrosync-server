@@ -89,7 +89,7 @@ export class RestaurantRepository {
   }
   async findRestaurants(params: { softwareId: string }) {
     const { softwareId } = params;
-    console.log("Whaaat")
+    console.log("Whaaat");
     try {
       const response = await db
         .select({
