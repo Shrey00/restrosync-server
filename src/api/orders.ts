@@ -27,8 +27,7 @@ const orders = new Orders();
 app.post("/place-order", auth, async (req: Request, res: Response) => {
   const userId = req.user?.id;
   const response = await orders.postOrder({ userId, ...req.body });
-  const formattedResponse = formatResponse(req.newToken, response);
-  res.status(200).json(formattedResponse);
+  res.status(200).json(response);
 });
 
 // // URL - menu/restaurantId

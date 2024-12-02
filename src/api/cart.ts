@@ -26,6 +26,7 @@ app.post("/add-to-cart", auth, async (req: Request, res: Response, next: NextFun
   }
 });
 app.get("/get-cart-items", auth, async (req: Request, res: Response) => {
+  console.log("YEEE BOI")
   const response = await cart.getCartItems({
     ...req.body,
     userId: req.user?.id,
