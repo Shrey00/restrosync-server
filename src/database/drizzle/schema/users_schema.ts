@@ -10,8 +10,6 @@ import {
   smallint,
   timestamp,
 } from "drizzle-orm/pg-core";
-import { restaurants } from "./restaurants_schema";
-import { address } from "./address_schema";
 
 export const users = pgTable("users", {
   id: uuid("id").primaryKey().defaultRandom().notNull(),
@@ -25,6 +23,7 @@ export const users = pgTable("users", {
   emailVerified: boolean("email_verified").default(false),
   contactVerified: boolean("contact_verified").default(false),
   loyaltyPoints: smallint("loyalty_points").default(10).notNull(),
+  accountActive: boolean("account_active").default(true).notNull(),
   createdAt: timestamp("created_at", {
     withTimezone: true,
     precision: 3,

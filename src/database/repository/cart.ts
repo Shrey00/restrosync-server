@@ -89,4 +89,15 @@ export class CartRepository {
         throw new AppError(500, e?.message, "Error Occured while deleting the cart item.", false);
     }
   }
+  async deleteAllCartItems(params: { userId: string;}) {
+    try {
+      const response = await db
+        .delete(cart)
+        .where(sql`${cart.userId}=${params.userId}`);
+      return response;
+    } catch (e) {
+      if (e instanceof Error)
+        throw new AppError(500, e?.message, "Error Occured while deleting the cart item.", false);
+    }
+  }
 }

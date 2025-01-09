@@ -33,6 +33,15 @@ export const orders = pgTable("orders", {
   paymentStatus: varchar("payment_status", { length: 50 }).$type<
     "Created" | "Authorised" | "Captured" | "Refunded" | "Failed" | "Pending"
   >(),
+  deliveryStatus: varchar("delivery_status", { length: 50 }).$type<
+    | "Confirmed"
+    | "Preparing"
+    | "Ready"
+    | "Picked"
+    | "Enroute"
+    | "Delivered"
+    | "Cancelled"
+  >(),
   scheduledOrder: boolean("scheduled_order").default(false), // use expected delivery time for schedule
   scheduledAt: timestamp("scheduled_at", {
     withTimezone: true,

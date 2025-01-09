@@ -77,7 +77,7 @@ export class Menu {
     const data = await this.repository.createMenuItemVariants(params);
     if (data) return data;
   }
-  async deleteMenuItem(param: any) {  
+  async deleteMenuItem(param: any) {
     const data = await this.repository.deleteMenuItem();
     if (data) return data;
   }
@@ -93,9 +93,12 @@ export class Menu {
     const data = await this.repository.createCategory(params);
     if (data) return data;
   }
-
   async search(params: any) {
     const data = await this.repository.search(params);
+    return data;
+  }
+  async getTopTenItemsByOrders(params: { softwareId: string }) {
+    const data = await this.repository.getTopTenItems(params);
     return data;
   }
 }

@@ -5,12 +5,8 @@
 import { NextFunction, Request, response, Response } from "express";
 import { Router } from "express";
 import { Menu } from "../services";
-import { Restaurant } from "../types";
-import { auth } from "./middlewares/auth";
 import path, { format } from "path";
 import { menuUpload as upload } from "./middlewares/storage";
-import { JwtConfig, JwtPayloadData } from "../types";
-import { Jwt, JwtPayload } from "jsonwebtoken";
 import formatResponse from "../utils/formatResponse";
 
 const app = Router();
@@ -23,16 +19,19 @@ app.get("/get-menu-categories", async (req: Request, res: Response) => {
   res.status(200).json(formattedResponse);
 });
 
-app.post("/item/variants", async (req: Request, res: Response, next: NextFunction) => {
-  try {
-    const { menuItemId } = req.body;
-    const response = await menu.getMenuVariants({ menuItemId });
-    const formattedResponse = formatResponse(req.newToken, response);
-    res.status(200).json(formattedResponse);
-  }catch(e) {
-    next(e)
+app.post(
+  "/item/variants",
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const { menuItemId } = req.body;
+      const response = await menu.getMenuVariants({ menuItemId });
+      const formattedResponse = formatResponse(req.newToken, response);
+      res.status(200).json(formattedResponse);
+    } catch (e) {
+      next(e);
+    }
   }
-});
+);
 
 app.post(
   "/add-item",
@@ -94,6 +93,14 @@ app.post("/add-category", async (req: Request, res: Response) => {
   const response = await menu.postCategoryUnderAType(req.body);
   const formattedResponse = formatResponse(req.newToken, response);
   res.status(200).json(formattedResponse);
+});
+app.get("/popular-items/:softwareId", async (req: Request, res: Response) => {
+  const response = await menu.getTopTenItemsByOrders({
+    softwareId: req.params.softwareId,
+  });
+  console.log("THSI IS IT")
+  console.log(response)
+  res.status(200).json(response);
 });
 app.get("/search", async (req: Request, res: Response) => {
   const response = await menu.search(req.query);

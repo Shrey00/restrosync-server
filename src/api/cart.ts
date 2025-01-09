@@ -26,7 +26,6 @@ app.post("/add-to-cart", auth, async (req: Request, res: Response, next: NextFun
   }
 });
 app.get("/get-cart-items", auth, async (req: Request, res: Response) => {
-  console.log("YEEE BOI")
   const response = await cart.getCartItems({
     ...req.body,
     userId: req.user?.id,
@@ -48,6 +47,20 @@ app.delete(
     try {
       const response = await cart.deleteCartItem({
         itemId: req.body.itemId,
+      });
+    } catch (e) {
+      next(e);
+    }
+    res.status(200).json(response);
+  }
+);
+app.delete(
+  "/delete-all",
+  auth,
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const response = await cart.deleteAllCartItems({
+        userId: req.user?.id!
       });
     } catch (e) {
       next(e);

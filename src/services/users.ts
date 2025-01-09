@@ -5,54 +5,76 @@ import jwt from "jsonwebtoken";
 import { handler, AppError } from "../utils/ErrorHandler";
 import { Request, Response } from "express";
 import formatResponse from "../utils/formatResponse";
-// import twilio from "twilio";
-// ; // Or, for ESM: import twilio from "twilio";
 
-// // Find your Account SID and Auth Token at twilio.com/console
-// // and set the environment variables. See http://twil.io/secure
-// const accountSid = process.env.TWILIO_ACCOUNT_SID;
-// const authToken = process.env.TWILIO_AUTH_TOKEN;
-// const client = twilio(accountSid, authToken);
+import twilio from "twilio";
+import "dotenv/config";
+import { error } from "console";
 
 export class Users {
   private repository: any;
+  private client: any;
+
   constructor() {
     this.repository = new UserRepository();
+    this.client = twilio(
+      process.env.TWILIO_ACCOUNT_SID!,
+      process.env.TWILIO_AUTH_TOKEN!
+    );
   }
 
   //sign up only for customers
-  async postSignup(customer: User) {
-    let { firstName, lastName, contact, email, password, role } = customer;
+  async postSignup(customer: any) {
+    let { firstName, lastName, phone, email, password } = customer;
+    console.log(password);
+    console.log(customer);
+
     const hash = await bcrypt.hash(password as string, 10);
     password = hash;
-    this.repository.createUser({
+    const response = await this.repository.createUser({
       firstName,
       lastName,
-      contact,
+      contact: phone,
       email,
       password,
-      role,
+      contactVerified: true,
     });
-    return { status: "sucess" };
+
+    const data = {
+      id: response.id,
+    };
+    let jwtConfig: JwtConfig = {
+      audience: "restrosync",
+      issuer: "zyptec pvt ltd",
+      subject: response.email,
+      expiresIn: "1y",
+    };
+    let signedToken: string = jwt.sign(
+      data,
+      process.env.JWT_SECRET as string,
+      jwtConfig
+    );
+    let refreshToken: string = jwt.sign(
+      data,
+      process.env.JWT_SECRET as string,
+      jwtConfig
+    );
+    const responseData: Array<UserWithToken> = [
+      {
+        firstName: response.firstName,
+        lastName: response.lastName,
+        email: response.email,
+        role: response.role,
+        contact: response.contact,
+        countryCode: response.countryCode,
+        loyaltyPoints: response.loyaltyPoints,
+        refreshToken: refreshToken,
+        token: signedToken,
+      },
+    ];
+    return responseData;
   }
 
-  // async verifyOtp(phoneNumber: string){
-  //   const accountSid = process.env.TWILIO_ACCOUNT_SID as string;
-  //   const authToken = process.env.TWILIO_AUTH_TOKEN as string;
-  //   const client = twilio(accountSid, authToken);
-  //   const verification = await client.verify.v2
-  //   .services(accountSid)
-  //   .verifications.create({
-  //     channel: "sms",
-  //     to: "+15017122661",
-  //   });
-  // }
-  //works for sign in of users of all types of roles
-  async postSignIn(
-    req: Request,
-    res: Response
-  ): Promise<UserWithToken[] | void> {
-    console.log(req.body);
+  async postSignIn(req: Request, res: Response): Promise<any> {
     let {
       email,
       password,
@@ -70,6 +92,12 @@ export class Users {
     const isIOSApp: boolean =
       /iPhone|iPad|iPod/i.test(userAgent) && !isWebBrowser;
     let response: User = await this.repository.findUserByEmail({ email });
+    if (!response)
+      return {
+        statusCode: 401,
+        name: "Unauthorized",
+        desc: "Wrong email or password",
+      };
     const checkPassword: boolean = await bcrypt.compare(
       password,
       response.password as string
@@ -82,7 +110,7 @@ export class Users {
         audience: "restrosync",
         issuer: "zyptec pvt ltd",
         subject: response.email,
-        expiresIn: "2s",
+        expiresIn: "1y",
       };
       let signedToken: string = jwt.sign(
         data,
@@ -96,7 +124,6 @@ export class Users {
         process.env.JWT_SECRET as string,
         jwtConfig
       );
-
       const responseData: Array<UserWithToken> = [
         {
           firstName: response.firstName,
@@ -128,8 +155,89 @@ export class Users {
       );
     }
   }
+
   async getUser({ id }: { id?: string }) {
     let data: User[] = await this.repository.findUserById({ id });
     return [data];
+  }
+
+  async getUserByPhone(params: { contact: string }) {
+    let data = await this.repository.findUserByContact(params);
+    return data;
+  }
+
+  async deleteAccount(params: { userId: string }) {
+    const response = await this.repository.patchAccountActiveStatus({
+      userId: params.userId,
+    });
+    return response;
+  }
+
+  /**
+   * Send an OTP via Twilio Verify Service
+   * @param phone - Phone number to send the OTP
+   * @returns {Promise<{ message: string }>}
+   */
+  async sendVerificationCode(phone: string): Promise<{ message: string }> {
+    const response = await this.client.verify.v2
+      .services("VAa1cad9454e7d4f80f443f9009ab24fe2")
+      .verifications.create({ to: "+91" + phone, channel: "sms" });
+    if (response.status === "pending") {
+      return { message: "OTP sent successfully" };
+    } else {
+      throw new Error("Failed to send OTP");
+    }
+  }
+  /**
+   * Verify the OTP using Twilio Verify Service
+   * @param phone - Phone number to verify
+   * @param otp - OTP to verify
+   * @returns {Promise<any>}
+   */
+  async verifyCode(phone: string, otp: string): Promise<any> {
+    const response = await this.client.verify.v2
+      .services("VAa1cad9454e7d4f80f443f9009ab24fe2")
+      .verificationChecks.create({ to: "+91" + phone, code: otp });
+    return response;
+  }
+
+  async postSignInWithPhone(
+    phone: string,
+    otp: string
+  ): Promise<Array<UserWithToken>> {
+    const response = await this.getUserByPhone({ contact: phone });
+    const data = {
+      id: response.id,
+    };
+    let jwtConfig: JwtConfig = {
+      audience: "restrosync",
+      issuer: "zyptec pvt ltd",
+      subject: response.email,
+      expiresIn: "1y",
+    };
+    let signedToken: string = jwt.sign(
+      data,
+      process.env.JWT_SECRET as string,
+      jwtConfig
+    );
+    let refreshToken: string = jwt.sign(
+      data,
+      process.env.JWT_SECRET as string,
+      jwtConfig
+    );
+    const responseData: Array<UserWithToken> = [
+      {
+        firstName: response.firstName,
+        lastName: response.lastName,
+        email: response.email,
+        role: response.role,
+        contact: response.contact,
+        countryCode: response.countryCode,
+        loyaltyPoints: response.loyaltyPoints,
+        refreshToken: refreshToken,
+        token: signedToken,
+      },
+    ];
+    return responseData;
   }
 }

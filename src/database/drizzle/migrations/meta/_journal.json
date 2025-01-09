@@ -169,6 +169,20 @@
       "when": 1732015573069,
       "tag": "0023_silly_old_lace",
       "breakpoints": true
+    },
+    {
+      "idx": 24,
+      "version": "7",
+      "when": 1735571180267,
+      "tag": "0024_solid_spot",
+      "breakpoints": true
+    },
+    {
+      "idx": 25,
+      "version": "7",
+      "when": 1735839723305,
+      "tag": "0025_known_moondragon",
+      "breakpoints": true
     }
   ]
 }

@@ -21,6 +21,7 @@ export class UserRepository {
           role,
         } as any)
         .returning({
+          id: users.id,
           firstName: users.firstName,
           lastName: users.lastName,
           email: users.email,
@@ -40,14 +41,9 @@ export class UserRepository {
       const data = await db
         .select()
         .from(users)
-        .where(sql`${users.email} = ${email}`);
+        .where(sql`${users.email}=${email} AND ${users.accountActive}=${true}`);
       if (data.length) return data[0];
-      throw new AppError(
-        404,
-        "Not Found",
-        "User not found, please check the credentials",
-        true
-      );
+      return null;
     } catch (e) {
       if (e instanceof Error)
         throw new AppError(500, e?.message, "DB error", false);
@@ -83,16 +79,32 @@ export class UserRepository {
     const { contact } = params;
     try {
       const data = await db
-        .select()
+        .select({
+          id: users.id,
+          firstName: users.firstName,
+          lastName: users.lastName,
+          contact: users.contact,
+          countryCode: users.countryCode,
+          email: users.email,
+          role: users.role,
+          loyaltyPoints: users.loyaltyPoints,
+        })
         .from(users)
         .where(sql`${users.contact} = ${contact}`);
       if (data.length) return data[0];
-      throw new AppError(
-        404,
-        "User not found, please check the credentials",
-        "Not Found",
-        true
-      );
+      return null;
+    } catch (e) {
+      if (e instanceof Error)
+        throw new AppError(500, e?.message, "DB error", false);
+    }
+  }
+  async patchAccountActiveStatus(params: { userId: string }) {
+    const { userId } = params;
+    try {
+      const data = await db
+        .update(users)
+        .set({ accountActive: false })
+        .where(sql`${users.id}=${userId}`);
     } catch (e) {
       if (e instanceof Error)
         throw new AppError(500, e?.message, "DB error", false);

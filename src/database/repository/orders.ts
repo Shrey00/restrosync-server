@@ -3,6 +3,7 @@ import { eq, inArray, sql } from "drizzle-orm";
 import { RestaurantRequestBody } from "../../types";
 import { restaurants } from "../drizzle/schema/restaurants_schema";
 import { orders } from "../drizzle/schema/orders_schema";
+import { orderItems } from "../drizzle/schema/order_items_schema";
 import { menu } from "../drizzle/schema/menu_schema";
 import { cart } from "../drizzle/schema/cart_schema";
 import { orderItems as orderItemsTable } from "../drizzle/schema/order_items_schema";
@@ -46,6 +47,8 @@ export class OrdersRepository {
       orderItems.forEach((item: any, index: number) => {
         orderItemIdArr.push(item.menuId);
       });
+      console.log("This is item");
+      console.log(orderItems);
       const response = await db.transaction(async (txn) => {
         // Step 1: Insert into orders table
         const orderItemsData = await txn
@@ -65,6 +68,7 @@ export class OrdersRepository {
             customerId: userId,
             taxes: 0,
             deliveryCharges: 0,
+            deliveryStatus: "Confirmed",
             totalAmount: orderItemsData[0].totalPrice,
             paymentMethod: paymentMethod,
             paymentStatus: paymentMethod === "COD" ? "Pending" : "Created",
@@ -83,7 +87,8 @@ export class OrdersRepository {
             scheduledAt: orders.scheduledAt,
             address: orders.address,
           });
-
+        console.log("DEBUG BRO");
+        console.log(JSON.stringify(orderItemsData, null, 2));
         const orderItemsDataClean = [...orderItemsData] as OrderItemsData;
         const orderItemsDetailsArr: any[] = [];
         if (orderItemsDataClean[0].items.length > 0)
@@ -103,5 +108,92 @@ export class OrdersRepository {
     } catch (e) {
       console.log(e);
     }
+  }
+  async getOrdersByUser(params: { userId: string }) {
+    const myOrderItemsList = await db
+      .select({
+        orderId: orders.orderId,
+        totalAmount: orders.totalAmount,
+        restaurantName: restaurants.name,
+        deliveryStatus: orders.deliveryStatus,
+        createdAt: orders.createdAt,
+        orderItems: sql`json_agg(json_build_object(
+          'name', ${menu.name},
+          'cuisineType', ${menu.cuisineType},
+          'status', ${orderItems.status},
+          'quantity', ${orderItems.quantity},
+          'amount', ${orderItems.amount}
+        ))`,
+      })
+      .from(orderItems)
+      .innerJoin(menu, sql`${orderItems.orderItem}=${menu.id}`)
+      .innerJoin(orders, sql`${orderItems.orderId}=${orders.id}`)
+      .innerJoin(restaurants, sql`${menu.restaurantId}=${restaurants.id}`)
+      .where(sql`${orders.customerId}=${params.userId}`)
+      .groupBy(
+        orders.orderId,
+        orders.totalAmount,
+        restaurants.name,
+        orders.createdAt,
+        orders.deliveryStatus
+      );
+    return myOrderItemsList;
+  }
+  async updateOrderStatus(params: {
+    orderId: string;
+    orderStatus:
+      | "Confirmed"
+      | "Preparing"
+      | "Ready"
+      | "Picked"
+      | "Enroute"
+      | "Delivered"
+      | "Cancelled"
+      | null
+      | undefined;
+  }) {
+    const { orderStatus } = params;
+    const response = await db
+      .update(orders)
+      .set({ deliveryStatus: orderStatus })
+      .where(sql`${orders.id}=${params.orderId}`);
+    return response;
+  }
+  async getPendingOrderDetails(params: { userId: string }) {
+    const pendingOrderItems = await db
+    .select({
+      orderId: orders.orderId,
+      totalAmount: orders.totalAmount,
+      restaurantName: restaurants.name,
+      deliveryStatus: orders.deliveryStatus,
+      createdAt: orders.createdAt,
+      orderItems: sql`json_agg(json_build_object(
+        'name', ${menu.name},
+        'cuisineType', ${menu.cuisineType},
+        'status', ${orderItems.status},
+        'quantity', ${orderItems.quantity},
+        'amount', ${orderItems.amount}
+      ))`,
+    })
+    .from(orderItems)
+    .innerJoin(menu, sql`${orderItems.orderItem}=${menu.id}`)
+    .innerJoin(orders, sql`${orderItems.orderId}=${orders.id}`)
+    .innerJoin(restaurants, sql`${menu.restaurantId}=${restaurants.id}`)
+    .where(sql`${orders.customerId}=${params.userId} AND ${orders.deliveryStatus}!='Confirmed' AND ${orders.deliveryStatus}!='Cancelled'`)
+    .groupBy(
+      orders.orderId,
+      orders.totalAmount,
+      restaurants.name,
+      orders.createdAt,
+      orders.deliveryStatus
+    );
+    return pendingOrderItems;
+  }
+  async getOrderStatus(params: { orderId: string }) {
+    const response = await db
+      .select({ orderStatus: orders.deliveryStatus })
+      .from(orders)
+      .where(sql`${orders.orderId}=${params.orderId}`);
+    return response;
   }
 }

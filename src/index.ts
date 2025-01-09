@@ -53,10 +53,8 @@ app.use((err: AppError, req: Request, res: Response, next: NextFunction) => {
     .json({ statusCode: err.httpCode, name: err.name, desc: err.description });
 });
 
-const PORT = process.env.PORT ? process.env.PORT : 4000;
+const PORT =  4000;
 app.listen(PORT, () => {
   console.log("server listening at " + PORT);
 });
 
-//Users
-//Restaurants and Menu, Sales and Orders, Cart, Delivery, Dashboard

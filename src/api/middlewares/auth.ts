@@ -51,7 +51,6 @@ export async function auth(req: Request, res: Response, next: NextFunction) {
   const authorizationHeader = req.headers["authorization"];
   if (isWebBrowser) refreshToken = req.cookies.refreshToken;
   if (authorizationHeader) {
-    console.log("USSER")
     const tokenParts = authorizationHeader?.split(" ");
     if (tokenParts.length === 2 && tokenParts[0].toLowerCase() == "bearer") {
       const token = tokenParts[1];

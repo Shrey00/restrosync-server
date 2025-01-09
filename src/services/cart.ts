@@ -29,4 +29,8 @@ export class Cart {
     const response = await this.repository.deleteCartItem(params);
     return response;
   }
+  async deleteAllCartItems(params: { userId: string }) {
+    const response = await this.repository.deleteAllCartItems(params);
+    return response;
+  }
 }

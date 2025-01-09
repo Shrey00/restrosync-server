@@ -13,24 +13,6 @@ import { query } from "express";
 export class MenuRepository {
   async findMenuItems(params: { restaurantId: string; queryParams: any }) {
     try {
-      // Object.keys(params.queryParams).forEach((key, index) => {
-      //   if (
-      //     Object.keys(params.queryParams).length > 0 &&
-      //     index < 2 &&
-      //     params.restaurantId
-      //   ) {
-      //     queryCondition += ` and `;
-      //   }
-      //   if (key === "searchQuery") {
-      //     queryCondition += `${menu.name}=${params.queryParams[key]}`;
-      //   }
-      //   if (key === "cuisineType") {
-      //     queryCondition += `${menu.cuisineType}=${params.queryParams[key]}`;
-      //   }
-      //   if (key === "ratingFrom") {
-      //     queryCondition += `${menu.rating}>${params.queryParams[key]}`;
-      //   }
-      // });
       const conditions = [];
       conditions.push(
         or(sql`${menu.variant}=${"parent"}`, sql`${menu.variant}=${"none"}`)
@@ -356,6 +338,42 @@ export class MenuRepository {
             menu.variant
           }=${"parent"} or ${menu.variant}=${"none"})`
         );
+      return response;
+    } catch (e) {
+      if (e instanceof Error)
+        throw new AppError(500, e?.message, "DB error", true);
+    }
+  }
+  async getTopTenItems(params: { softwareId: string }) {
+    try {
+      const response = await db
+        .select({
+          id: menu.id,
+          name: menu.name,
+          available: menu.available,
+          cuisineType: menu.cuisineType,
+          orders: menu.orders,
+          description: menu.description,
+          rating: menu.rating,
+          reviewSummary: menu.reviewSummary,
+          discount: menu.discount,
+          markedPrice: menu.markedPrice,
+          sellingPrice: menu.sellingPrice,
+          calories: menu.calories,
+          healthScore: menu.healthScore,
+          showHealthInfo: menu.showHealthInfo,
+          images: menu.images,
+          variant: menu.variant,
+        })
+        .from(menu)
+        .innerJoin(restaurants, sql`${menu.restaurantId}=${restaurants.id}`)
+        .where(
+          sql`${restaurants.softwareId}=${params.softwareId} AND (${
+            menu.variant
+          }=${"parent"} OR ${menu.variant}=${"none"})`
+        )
+        .orderBy(sql`${menu.orders} desc`)
+        .limit(10);
       return response;
     } catch (e) {
       if (e instanceof Error)
