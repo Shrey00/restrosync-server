@@ -17,8 +17,9 @@ app.post("/signup", async (req: Request, res: Response, next: NextFunction) => {
 app.post("/signin", async (req: Request, res: Response, next: NextFunction) => {
   try {
     const data = await users.postSignIn(req, res);
-    if (data.statusCode === 401) res.status(401).json(data);
-    res.status(200).json(data);
+    const response = formatResponse(null, data)
+    if (data.statusCode === 401) res.status(401).json(data);    
+    res.status(200).json(response);
   } catch (e) {
     next(e);
   }
