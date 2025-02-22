@@ -13,11 +13,10 @@ import {
   menuRoutes,
   restaurantRoutes,
   userRoutes,
-  orderRoutes
+  orderRoutes,
 } from "./api";
 import { AppError, handler } from "./utils/ErrorHandler";
 import cookieParser from "cookie-parser";
-
 // const envFile = process.env.NODE_ENV === 'development' ? '.env.development' : '.env.development';
 // dotenv.config({ path: envFile });
 
@@ -29,10 +28,10 @@ app.use(cookieParser());
 app.use(
   cors({
     exposedHeaders: "Authorization",
-    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
     credentials: true,
     allowedHeaders: ["Content-Type", "Authorization"],
-    origin: "http://localhost:3000",
+    origin: "http://localhost:3001",  
   })
 );
 app.use(express.urlencoded({ extended: true }));
@@ -53,8 +52,8 @@ app.use((err: AppError, req: Request, res: Response, next: NextFunction) => {
     .json({ statusCode: err.httpCode, name: err.name, desc: err.description });
 });
 
-const PORT =  4000;
+const PORT = 4000;
+
 app.listen(PORT, () => {
   console.log("server listening at " + PORT);
 });
-

@@ -77,6 +77,14 @@ app.post("/items", async (req: Request, res: Response, next: NextFunction) => {
     next(e);
   }
 });
+app.post("/item", async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const response = await menu.getMenuItem(req.body);
+    res.status(200).json(response);
+  } catch (e) {
+    next(e);
+  }
+});
 app.post(
   "/category-wise-items",
   async (req: Request, res: Response, next: NextFunction) => {
@@ -98,7 +106,6 @@ app.get("/popular-items/:softwareId", async (req: Request, res: Response) => {
   const response = await menu.getTopTenItemsByOrders({
     softwareId: req.params.softwareId,
   });
-  console.log("THSI IS IT")
   console.log(response)
   res.status(200).json(response);
 });

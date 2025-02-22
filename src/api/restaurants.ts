@@ -4,7 +4,8 @@ import { Restaurants } from "../services";
 import { Restaurant } from "../types";
 import { auth } from "./middlewares/auth";
 import path from "path";
-import { restaurantUpload as upload } from "./middlewares/storage";
+import { restaurantUpload } from "./middlewares/storage";
+import { bannerUpload } from "./middlewares/storage";
 import { JwtConfig, JwtPayloadData } from "../types";
 import { Jwt, JwtPayload } from "jsonwebtoken";
 import formatResponse from "../utils/formatResponse";
@@ -14,7 +15,7 @@ const restaurants = new Restaurants();
 // Define the types for `req.files` fields
 app.post(
   "/create",
-  upload.fields([
+  restaurantUpload.fields([
     { name: "logo", maxCount: 1 },
     { name: "images", maxCount: 5 },
   ]),
@@ -61,8 +62,8 @@ app.get("/list/:softwareId", async (req: Request, res: Response) => {
 app.patch(
   "/update/",
   auth,
-  upload.array("images"),
-  upload.single("logo"),
+  restaurantUpload.array("images"),
+  restaurantUpload.single("logo"),
   async (req: Request, res: Response) => {
     const images = req.files as Express.Multer.File[];
     const logo = req.file as Express.Multer.File;
@@ -72,6 +73,24 @@ app.patch(
     req.body.logo = logoPath;
     const data = restaurants.updateRestaurant(req.body);
     res.status(200).json(data);
+  }
+);
+
+app.post("/offers", auth, async (req: Request, res: Response) => {
+  const response = await restaurants.getOffers(req.body);
+  console.log(response);
+  console.log("IT IS")
+  res.status(200).json(response);
+});
+app.post(
+  "/offers/create",
+  auth,
+  bannerUpload.single("image"),
+  async (req: Request, res: Response) => {
+    const image = req.file;
+    req.body.image = image?.path;
+    const response = await restaurants.createOffers(req.body);
+    res.status(200).json(response);
   }
 );
 /**

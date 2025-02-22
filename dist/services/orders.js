@@ -17,14 +17,31 @@ class Orders {
     }
     postOrder(params) {
         return __awaiter(this, void 0, void 0, function* () {
-            const { userId, order_items, scheduledOrder, addressId, restaurantId } = params;
-            const response = yield this.repository.createOrder({
-                userId,
-                order_items,
-                scheduledOrder,
-                addressId,
-                restaurantId,
-            });
+            const response = yield this.repository.createOrder(params);
+            return response;
+        });
+    }
+    getOrdersByUser(params) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const response = yield this.repository.getOrdersByUser(params);
+            return response;
+        });
+    }
+    updateOrderStatus(params) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const response = yield this.repository.updateOrderStatus(params);
+            return response;
+        });
+    }
+    getPendingOrderDetails(params) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const response = yield this.repository.getPendingOrderDetails(params);
+            return response;
+        });
+    }
+    getOrderStatus(params) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const response = yield this.repository.getOrderStatus(params);
             return response;
         });
     }

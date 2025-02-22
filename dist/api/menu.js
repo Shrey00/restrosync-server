@@ -28,15 +28,16 @@ app.get("/get-menu-categories", (req, res) => __awaiter(void 0, void 0, void 0, 
     const formattedResponse = (0, formatResponse_1.default)(req.newToken, response);
     res.status(200).json(formattedResponse);
 }));
-// app.get("/app-categories", async (req: Request, res: Response) => {
-//   const response = await menu.getMenuCategories();
-//   res.status(200).json(response);
-// });
-app.post("/item/variants", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const { menuItemId } = req.body;
-    const response = yield menu.getMenuVariants({ menuItemId });
-    const formattedResponse = (0, formatResponse_1.default)(req.newToken, response);
-    res.status(200).json(formattedResponse);
+app.post("/item/variants", (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { menuItemId } = req.body;
+        const response = yield menu.getMenuVariants({ menuItemId });
+        const formattedResponse = (0, formatResponse_1.default)(req.newToken, response);
+        res.status(200).json(formattedResponse);
+    }
+    catch (e) {
+        next(e);
+    }
 }));
 app.post("/add-item", storage_1.menuUpload.array("images"), (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     var _a;
@@ -83,6 +84,14 @@ app.post("/add-category", (req, res) => __awaiter(void 0, void 0, void 0, functi
     const response = yield menu.postCategoryUnderAType(req.body);
     const formattedResponse = (0, formatResponse_1.default)(req.newToken, response);
     res.status(200).json(formattedResponse);
+}));
+app.get("/popular-items/:softwareId", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const response = yield menu.getTopTenItemsByOrders({
+        softwareId: req.params.softwareId,
+    });
+    console.log("THSI IS IT");
+    console.log(response);
+    res.status(200).json(response);
 }));
 app.get("/search", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const response = yield menu.search(req.query);

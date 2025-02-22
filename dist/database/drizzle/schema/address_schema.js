@@ -16,5 +16,6 @@ exports.address = (0, pg_core_1.pgTable)("address", {
     postalCode: (0, pg_core_1.text)("postal_code").notNull(),
     location: (0, pg_core_1.point)("point", { mode: "xy" }),
     type: (0, pg_core_1.varchar)("type", { length: 40 }).$type(),
+    selected: (0, pg_core_1.boolean)("selected").default(false),
 });
 //# sourceMappingURL=address_schema.js.map

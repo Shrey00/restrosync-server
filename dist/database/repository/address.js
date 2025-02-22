@@ -70,7 +70,31 @@ class AddressRepository {
                     country: address_schema_1.address.country,
                     postalCode: address_schema_1.address.postalCode,
                     location: address_schema_1.address.location,
+                    selected: address_schema_1.address.selected,
                 });
+                return response;
+            }
+            catch (e) {
+                if (e instanceof Error)
+                    throw new ErrorHandler_1.AppError(500, e === null || e === void 0 ? void 0 : e.message, "DB error", true);
+            }
+        });
+    }
+    updateAddressSelect(params) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const response = yield connection_1.default.transaction((txn) => __awaiter(this, void 0, void 0, function* () {
+                    yield txn
+                        .update(address_schema_1.address)
+                        .set({ selected: false })
+                        .where((0, drizzle_orm_1.sql) `${address_schema_1.address.userId}=${params.userId}`);
+                    const response = yield txn
+                        .update(address_schema_1.address)
+                        .set({ selected: true })
+                        .where((0, drizzle_orm_1.sql) `${address_schema_1.address.id}=${params.addressId}`)
+                        .returning({ addressId: address_schema_1.address.id });
+                    return response;
+                }));
                 return response;
             }
             catch (e) {

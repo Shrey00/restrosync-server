@@ -33,25 +33,33 @@ export const orders = pgTable("orders", {
   paymentStatus: varchar("payment_status", { length: 50 }).$type<
     "Created" | "Authorised" | "Captured" | "Refunded" | "Failed" | "Pending"
   >(),
-  deliveryStatus: varchar("delivery_status", { length: 50 }).$type<
-    | "Confirmed"
-    | "Preparing"
-    | "Ready"
-    | "Picked"
-    | "Enroute"
-    | "Delivered"
-    | "Cancelled"
-  >(),
+  deliveryStatus: varchar("delivery_status", { length: 50 })
+    .$type<
+      | "Confirmed"
+      | "Preparing"
+      | "Ready"
+      | "Picked"
+      | "Enroute"
+      | "Delivered"
+      | "Cancelled"
+    >()
+    .default("Confirmed"),
   scheduledOrder: boolean("scheduled_order").default(false), // use expected delivery time for schedule
   scheduledAt: timestamp("scheduled_at", {
     withTimezone: true,
     precision: 3,
   }).notNull(),
   address: uuid("address").references(() => address.id),
+  note: text("note"),
+  restaurantId: uuid("restaurant_id").references(() => restaurants.id),
   createdAt: timestamp("order_time", {
     withTimezone: true,
     precision: 3,
   })
     .defaultNow()
     .notNull(),
+  updatedAt: timestamp("updated_at", {
+    withTimezone: true,
+    precision: 3,
+  }).$onUpdate(() => new Date()),
 });

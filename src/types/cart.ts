@@ -4,4 +4,5 @@ export interface CartItem {
   menuItemId?: string;
   quantity?: number;
   finalPrice?: number;
+  addOns?: { id: string; name: string; sellingPrice: number }[];
 }

@@ -25,6 +25,8 @@ class CartRepository {
                 const response = yield connection_1.default
                     .select({
                     id: cart_schema_1.cart.id,
+                    menuItemId: menu_schema_1.menu.id,
+                    restaurantId: menu_schema_1.menu.restaurantId,
                     name: menu_schema_1.menu.name,
                     quantity: cart_schema_1.cart.quantity,
                     sellingPrice: cart_schema_1.cart.finalPrice,
@@ -33,7 +35,7 @@ class CartRepository {
                     discount: menu_schema_1.menu.discount,
                 })
                     .from(cart_schema_1.cart)
-                    .innerJoin(menu_schema_1.menu, (0, drizzle_orm_1.sql) `${cart_schema_1.cart.itemId}=${menu_schema_1.menu.id}`)
+                    .innerJoin(menu_schema_1.menu, (0, drizzle_orm_1.sql) `${cart_schema_1.cart.menuItemId}=${menu_schema_1.menu.id}`)
                     .where((0, drizzle_orm_1.sql) `${cart_schema_1.cart.userId}=${params.userId}`);
                 return response;
             }
@@ -50,12 +52,12 @@ class CartRepository {
                     const itemPrice = yield txn
                         .select({ sellingPrice: menu_schema_1.menu.sellingPrice })
                         .from(menu_schema_1.menu)
-                        .where((0, drizzle_orm_1.sql) `${menu_schema_1.menu.id}=${params.itemId}`);
+                        .where((0, drizzle_orm_1.sql) `${menu_schema_1.menu.id}=${params.menuItemId}`);
                     const insertCartItem = yield txn
                         .insert(cart_schema_1.cart)
                         .values({
                         userId: params.userId,
-                        itemId: params.itemId,
+                        menuItemId: params.menuItemId,
                         quantity: params.quantity,
                         finalPrice: itemPrice[0].sellingPrice
                             ? itemPrice[0].sellingPrice * params.quantity
@@ -64,7 +66,7 @@ class CartRepository {
                         .returning({
                         id: cart_schema_1.cart.id,
                         userId: cart_schema_1.cart.userId,
-                        itemId: cart_schema_1.cart.itemId,
+                        menuItemId: cart_schema_1.cart.menuItemId,
                         quantity: cart_schema_1.cart.quantity,
                         finalPrice: cart_schema_1.cart.finalPrice,
                     });
@@ -75,6 +77,49 @@ class CartRepository {
             catch (e) {
                 if (e instanceof Error)
                     throw new ErrorHandler_1.AppError(500, e === null || e === void 0 ? void 0 : e.message, "DB error", false);
+            }
+        });
+    }
+    updateQuantity(params) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const response = yield connection_1.default
+                    .update(cart_schema_1.cart)
+                    .set({ quantity: params.quantity })
+                    .where((0, drizzle_orm_1.sql) `${cart_schema_1.cart.id}=${params.itemId}`);
+                return response;
+            }
+            catch (e) {
+                if (e instanceof Error)
+                    throw new ErrorHandler_1.AppError(500, e === null || e === void 0 ? void 0 : e.message, "DB error", false);
+            }
+        });
+    }
+    deleteCartItem(params) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const response = yield connection_1.default
+                    .delete(cart_schema_1.cart)
+                    .where((0, drizzle_orm_1.sql) `${cart_schema_1.cart.id}=${params.itemId}`);
+                return response;
+            }
+            catch (e) {
+                if (e instanceof Error)
+                    throw new ErrorHandler_1.AppError(500, e === null || e === void 0 ? void 0 : e.message, "Error Occured while deleting the cart item.", false);
+            }
+        });
+    }
+    deleteAllCartItems(params) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const response = yield connection_1.default
+                    .delete(cart_schema_1.cart)
+                    .where((0, drizzle_orm_1.sql) `${cart_schema_1.cart.userId}=${params.userId}`);
+                return response;
+            }
+            catch (e) {
+                if (e instanceof Error)
+                    throw new ErrorHandler_1.AppError(500, e === null || e === void 0 ? void 0 : e.message, "Error Occured while deleting the cart item.", false);
             }
         });
     }

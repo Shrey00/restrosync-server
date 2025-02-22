@@ -6,7 +6,7 @@ const menu_schema_1 = require("./menu_schema");
 exports.menuVariants = (0, pg_core_1.pgTable)("menu_item_variants", {
     id: (0, pg_core_1.serial)("id"),
     name: (0, pg_core_1.varchar)("name", { length: 100 }),
-    mainItemId: (0, pg_core_1.uuid)("main_item_id").references(() => menu_schema_1.menu.id),
-    variantId: (0, pg_core_1.uuid)("variant_id").references(() => menu_schema_1.menu.id),
+    mainItemId: (0, pg_core_1.uuid)("main_item_id").references(() => menu_schema_1.menu.id, { onDelete: 'cascade' }),
+    variantId: (0, pg_core_1.uuid)("variant_id").references(() => menu_schema_1.menu.id, { onDelete: 'cascade' }),
 });
 //# sourceMappingURL=menu_variants_schema.js.map

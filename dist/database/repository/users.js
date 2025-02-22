@@ -34,6 +34,7 @@ class UserRepository {
                     role,
                 })
                     .returning({
+                    id: users_schema_1.users.id,
                     firstName: users_schema_1.users.firstName,
                     lastName: users_schema_1.users.lastName,
                     email: users_schema_1.users.email,
@@ -56,10 +57,10 @@ class UserRepository {
                 const data = yield connection_1.default
                     .select()
                     .from(users_schema_1.users)
-                    .where((0, drizzle_orm_1.sql) `${users_schema_1.users.email} = ${email}`);
+                    .where((0, drizzle_orm_1.sql) `${users_schema_1.users.email}=${email} AND ${users_schema_1.users.accountActive}=${true}`);
                 if (data.length)
                     return data[0];
-                throw new ErrorHandler_1.AppError(404, "Not Found", "User not found, please check the credentials", true);
+                return null;
             }
             catch (e) {
                 if (e instanceof Error)
@@ -97,12 +98,36 @@ class UserRepository {
             const { contact } = params;
             try {
                 const data = yield connection_1.default
-                    .select()
+                    .select({
+                    id: users_schema_1.users.id,
+                    firstName: users_schema_1.users.firstName,
+                    lastName: users_schema_1.users.lastName,
+                    contact: users_schema_1.users.contact,
+                    countryCode: users_schema_1.users.countryCode,
+                    email: users_schema_1.users.email,
+                    role: users_schema_1.users.role,
+                    loyaltyPoints: users_schema_1.users.loyaltyPoints,
+                })
                     .from(users_schema_1.users)
                     .where((0, drizzle_orm_1.sql) `${users_schema_1.users.contact} = ${contact}`);
                 if (data.length)
                     return data[0];
-                throw new ErrorHandler_1.AppError(404, "User not found, please check the credentials", "Not Found", true);
+                return null;
+            }
+            catch (e) {
+                if (e instanceof Error)
+                    throw new ErrorHandler_1.AppError(500, e === null || e === void 0 ? void 0 : e.message, "DB error", false);
+            }
+        });
+    }
+    patchAccountActiveStatus(params) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const { userId } = params;
+            try {
+                const data = yield connection_1.default
+                    .update(users_schema_1.users)
+                    .set({ accountActive: false })
+                    .where((0, drizzle_orm_1.sql) `${users_schema_1.users.id}=${userId}`);
             }
             catch (e) {
                 if (e instanceof Error)

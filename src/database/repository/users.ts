@@ -1,7 +1,7 @@
 import { User } from "../../types/users";
 import { users } from "../drizzle/schema/users_schema";
 import db from "../connection";
-import { sql } from "drizzle-orm";
+import { sql, eq } from "drizzle-orm";
 import { AppError, handler } from "../../utils/ErrorHandler";
 
 export class UserRepository {
@@ -62,14 +62,8 @@ export class UserRepository {
           countryCode: users.countryCode,
         })
         .from(users)
-        .where(sql`${users.id} = ${id}`);
-      if (data.length) return data[0];
-      throw new AppError(
-        404,
-        "User not found, please check the userId",
-        "Not Found",
-        true
-      );
+        .where(sql`${users.id}=${id} AND ${users.accountActive}=${true}`);
+      return data[0];
     } catch (e) {
       if (e instanceof Error)
         throw new AppError(500, e?.message, "DB error", false);

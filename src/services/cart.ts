@@ -7,13 +7,13 @@ export class Cart {
     this.repository = new CartRepository();
   }
   async postCartItem(params: CartItem) {
-    const { userId, menuItemId, restaurantId } = params;
+    const { userId, menuItemId, addOns } = params;
     const quantity = 1;
     const response = await this.repository.insertCartItem({
       menuItemId,
       userId,
       quantity,
-      restaurantId,
+      addOns
     });
     return response;
   }

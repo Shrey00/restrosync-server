@@ -1,20 +1,19 @@
 import db from "../connection";
-import { eq, inArray, sql } from "drizzle-orm";
+import { eq, inArray, sql, or, and } from "drizzle-orm";
 import { RestaurantRequestBody } from "../../types";
 import { restaurants } from "../drizzle/schema/restaurants_schema";
 import { orders } from "../drizzle/schema/orders_schema";
 import { orderItems } from "../drizzle/schema/order_items_schema";
+import { address } from "../drizzle/schema/address_schema";
+import { users } from "../drizzle/schema/users_schema";
 import { menu } from "../drizzle/schema/menu_schema";
 import { cart } from "../drizzle/schema/cart_schema";
 import { orderItems as orderItemsTable } from "../drizzle/schema/order_items_schema";
-import { AddressType } from "../../types";
-import { relationUsersRestaurants } from "../drizzle/schema/user_restaurant_relation_schema";
-import { restaurantUpload } from "../../api/middlewares/storage";
-import { AppError, handler } from "../../utils/ErrorHandler";
 import {
   generateOrderId,
   getTimestampPlusOneHour,
 } from "../../utils/generateOrderId";
+import { AppError } from "../../utils/ErrorHandler";
 type OrderItemsData = {
   items: {
     menuId: string;
@@ -47,8 +46,6 @@ export class OrdersRepository {
       orderItems.forEach((item: any, index: number) => {
         orderItemIdArr.push(item.menuId);
       });
-      console.log("This is item");
-      console.log(orderItems);
       const response = await db.transaction(async (txn) => {
         // Step 1: Insert into orders table
         const orderItemsData = await txn
@@ -87,8 +84,6 @@ export class OrdersRepository {
             scheduledAt: orders.scheduledAt,
             address: orders.address,
           });
-        console.log("DEBUG BRO");
-        console.log(JSON.stringify(orderItemsData, null, 2));
         const orderItemsDataClean = [...orderItemsData] as OrderItemsData;
         const orderItemsDetailsArr: any[] = [];
         if (orderItemsDataClean[0].items.length > 0)
@@ -139,6 +134,79 @@ export class OrdersRepository {
       );
     return myOrderItemsList;
   }
+  async getOrdersByRestaurant(params: {
+    restaurantId: string;
+    queryParams: any;
+  }) {
+    try {
+      const conditions = [];
+      if (params.queryParams.search) {
+        conditions.push(
+          or(
+            sql`${users.firstName} ILIKE ${
+              "%" + params.queryParams.search + "%"
+            }`,
+            sql`${users.lastName} ILIKE ${
+              "%" + params.queryParams.search + "%"
+            }`,
+            sql`${orders.orderId} ILIKE ${
+              "%" + params.queryParams.search + "%"
+            }`
+          )
+        );
+      }
+      if (params.queryParams.orderStatus) {
+        conditions.push(
+          sql`${orders.deliveryStatus}=${params.queryParams.orderStatus}`
+        );
+      }
+      if (params.queryParams.paymentStatus) {
+        conditions.push(
+          sql`${orders.paymentStatus}=${params.queryParams.paymentStatus}`
+        );
+      }
+      if (params.queryParams.paymentMethod) {
+        conditions.push(
+          sql`${orders.paymentMethod}=${params.queryParams.paymentMethod}`
+        );
+      }
+      const totalOrdersByRestaurant = await db
+        .select({
+          id: orders.id,
+          orderId: orders.orderId,
+          paymentMethod: orders.paymentMethod,
+          paymentStatus: orders.paymentStatus,
+          scheduledOrder: orders.scheduledOrder,
+          scheduledAt: orders.scheduledAt,
+          totalAmount: orders.totalAmount,
+          taxes: orders.taxes,
+          deliveryCharges: orders.deliveryCharges,
+          deliveryStatus: orders.deliveryStatus,
+          customerFirstName: users.firstName,
+          customerLastName: users.lastName,
+          customerCountryCode: users.countryCode,
+          customerContact: users.contact,
+          customerEmail: users.email,
+          address: {
+            address_line_1: address.address_line_1,
+            address_line_2: address.address_line_2,
+            city: address.city,
+            postalCode: address.postalCode,
+            location: address.location,
+          },
+        })
+        .from(orders)
+        .innerJoin(users, sql`${orders.customerId}=${users.id}`)
+        .innerJoin(address, sql`${orders.address}=${address.id}`)
+        .orderBy(sql`${orders.createdAt} desc`)
+        .where(and(...conditions));
+      console.log(totalOrdersByRestaurant);
+      return totalOrdersByRestaurant;
+    } catch (e) {
+      if (e instanceof Error)
+        throw new AppError(500, e?.message, "DB error", true);
+    }
+  }
   async updateOrderStatus(params: {
     orderId: string;
     orderStatus:
@@ -161,39 +229,67 @@ export class OrdersRepository {
   }
   async getPendingOrderDetails(params: { userId: string }) {
     const pendingOrderItems = await db
-    .select({
-      orderId: orders.orderId,
-      totalAmount: orders.totalAmount,
-      restaurantName: restaurants.name,
-      deliveryStatus: orders.deliveryStatus,
-      createdAt: orders.createdAt,
-      orderItems: sql`json_agg(json_build_object(
+      .select({
+        orderId: orders.orderId,
+        totalAmount: orders.totalAmount,
+        restaurantName: restaurants.name,
+        deliveryStatus: orders.deliveryStatus,
+        createdAt: orders.createdAt,
+        orderItems: sql`json_agg(json_build_object(
         'name', ${menu.name},
         'cuisineType', ${menu.cuisineType},
         'status', ${orderItems.status},
         'quantity', ${orderItems.quantity},
         'amount', ${orderItems.amount}
       ))`,
-    })
-    .from(orderItems)
-    .innerJoin(menu, sql`${orderItems.orderItem}=${menu.id}`)
-    .innerJoin(orders, sql`${orderItems.orderId}=${orders.id}`)
-    .innerJoin(restaurants, sql`${menu.restaurantId}=${restaurants.id}`)
-    .where(sql`${orders.customerId}=${params.userId} AND ${orders.deliveryStatus}!='Confirmed' AND ${orders.deliveryStatus}!='Cancelled'`)
-    .groupBy(
-      orders.orderId,
-      orders.totalAmount,
-      restaurants.name,
-      orders.createdAt,
-      orders.deliveryStatus
-    );
+      })
+      .from(orderItems)
+      .innerJoin(menu, sql`${orderItems.orderItem}=${menu.id}`)
+      .innerJoin(orders, sql`${orderItems.orderId}=${orders.id}`)
+      .innerJoin(restaurants, sql`${menu.restaurantId}=${restaurants.id}`)
+      .where(
+        sql`${orders.customerId}=${params.userId} AND ${orders.deliveryStatus}!='Confirmed' AND ${orders.deliveryStatus}!='Cancelled'`
+      )
+      .groupBy(
+        orders.orderId,
+        orders.totalAmount,
+        restaurants.name,
+        orders.createdAt,
+        orders.deliveryStatus
+      );
     return pendingOrderItems;
   }
-  async getOrderStatus(params: { orderId: string }) {
+  async getOrderItems(params: { orderId: string }) {
     const response = await db
-      .select({ orderStatus: orders.deliveryStatus })
-      .from(orders)
-      .where(sql`${orders.orderId}=${params.orderId}`);
+      .select({
+        id: orderItems.id,
+        name: menu.name,
+        status: orderItems.status,
+        images: menu.images,
+        available: menu.available,
+        cuisineType: menu.cuisineType,
+        amount: orderItems.amount,
+        quantity: orderItems.quantity,
+        addOns: orderItems.addOns,
+      })
+      .from(orderItems)
+      .innerJoin(menu, sql`${orderItems.orderItem}=${menu.id}`)
+      .where(sql`${orderItems.orderId}=${params.orderId}`);
+    return response;
+  }
+  async setOrderItemStatus(params: {
+    orderItemId: string;
+    status: "Pending" | "Ready" | "Cancelled";
+  }) {
+    const response = await db
+      .update(orderItems)
+      .set({
+        status: params.status,
+      })
+      .where(sql`${orderItems.orderId}=${params.orderItemId}`)
+      .returning({
+        status: orderItems.status,
+      });
     return response;
   }
 }

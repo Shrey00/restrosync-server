@@ -41,5 +41,15 @@ app.get("/get-addresses", auth_1.auth, (req, res) => __awaiter(void 0, void 0, v
     const formattedResponse = (0, formatResponse_1.default)(req.newToken, response);
     res.status(200).json(formattedResponse);
 }));
+app.patch("/update-selected-address", auth_1.auth, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a;
+    const userId = (_a = req.user) === null || _a === void 0 ? void 0 : _a.id;
+    const response = yield address.patchSelectedAddress({
+        addressId: req.body.addressId,
+        userId: userId,
+    });
+    const formattedResponse = (0, formatResponse_1.default)(req.newToken, response);
+    res.status(200).json(formattedResponse);
+}));
 exports.default = app;
 //# sourceMappingURL=address.js.map

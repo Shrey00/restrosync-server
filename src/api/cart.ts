@@ -17,9 +17,9 @@ const cart = new Cart();
 
 app.post("/add-to-cart", auth, async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const { menuItemId } = req.body;
+    const { menuItemId, addOns } = req.body;
     const userId = req.user?.id;
-    const response = await cart.postCartItem({ menuItemId, userId });
+    const response = await cart.postCartItem({ menuItemId, userId, addOns });
     res.status(200).json(response);
   } catch (e) {
     next(e);

@@ -17,55 +17,70 @@ const users_1 = require("../database/repository/users");
 const bcrypt_1 = __importDefault(require("bcrypt"));
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const ErrorHandler_1 = require("../utils/ErrorHandler");
-// import twilio from "twilio";
-// ; // Or, for ESM: import twilio from "twilio";
-// // Find your Account SID and Auth Token at twilio.com/console
-// // and set the environment variables. See http://twil.io/secure
-// const accountSid = process.env.TWILIO_ACCOUNT_SID;
-// const authToken = process.env.TWILIO_AUTH_TOKEN;
-// const client = twilio(accountSid, authToken);
+const twilio_1 = __importDefault(require("twilio"));
+require("dotenv/config");
 class Users {
     constructor() {
         this.repository = new users_1.UserRepository();
+        this.client = (0, twilio_1.default)(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN);
     }
     //sign up only for customers
     postSignup(customer) {
         return __awaiter(this, void 0, void 0, function* () {
-            let { firstName, lastName, contact, email, password, role } = customer;
+            let { firstName, lastName, phone, email, password } = customer;
+            console.log(password);
+            console.log(customer);
             const hash = yield bcrypt_1.default.hash(password, 10);
             password = hash;
-            this.repository.createUser({
+            const response = yield this.repository.createUser({
                 firstName,
                 lastName,
-                contact,
+                contact: phone,
                 email,
                 password,
-                role,
+                contactVerified: true,
             });
-            return { status: "sucess" };
+            const data = {
+                id: response.id,
+            };
+            let jwtConfig = {
+                audience: "restrosync",
+                issuer: "zyptec pvt ltd",
+                subject: response.email,
+                expiresIn: "1y",
+            };
+            let signedToken = jsonwebtoken_1.default.sign(data, process.env.JWT_SECRET, jwtConfig);
+            let refreshToken = jsonwebtoken_1.default.sign(data, process.env.JWT_SECRET, jwtConfig);
+            const responseData = [
+                {
+                    firstName: response.firstName,
+                    lastName: response.lastName,
+                    email: response.email,
+                    role: response.role,
+                    contact: response.contact,
+                    countryCode: response.countryCode,
+                    loyaltyPoints: response.loyaltyPoints,
+                    refreshToken: refreshToken,
+                    token: signedToken,
+                },
+            ];
+            return responseData;
         });
     }
-    // async verifyOtp(phoneNumber: string){
-    //   const accountSid = process.env.TWILIO_ACCOUNT_SID as string;
-    //   const authToken = process.env.TWILIO_AUTH_TOKEN as string;
-    //   const client = twilio(accountSid, authToken);
-    //   const verification = await client.verify.v2
-    //   .services(accountSid)
-    //   .verifications.create({
-    //     channel: "sms",
-    //     to: "+15017122661",
-    //   });
-    // }
-    //works for sign in of users of all types of roles
     postSignIn(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
-            console.log(req.body);
             let { email, password, contact, } = req.body;
             const userAgent = req.headers["user-agent"];
             const isWebBrowser = /Mozilla|Chrome|Safari|Edge|Firefox/i.test(userAgent);
             const isAndroidApp = /Android/i.test(userAgent) && !isWebBrowser;
             const isIOSApp = /iPhone|iPad|iPod/i.test(userAgent) && !isWebBrowser;
             let response = yield this.repository.findUserByEmail({ email });
+            if (!response)
+                return {
+                    statusCode: 401,
+                    name: "Unauthorized",
+                    desc: "Wrong email or password",
+                };
             const checkPassword = yield bcrypt_1.default.compare(password, response.password);
             if (checkPassword) {
                 const data = {
@@ -75,7 +90,7 @@ class Users {
                     audience: "restrosync",
                     issuer: "zyptec pvt ltd",
                     subject: response.email,
-                    expiresIn: "2s",
+                    expiresIn: "1y",
                 };
                 let signedToken = jsonwebtoken_1.default.sign(data, process.env.JWT_SECRET, jwtConfig);
                 jwtConfig.expiresIn = "1y";
@@ -112,6 +127,82 @@ class Users {
         return __awaiter(this, arguments, void 0, function* ({ id }) {
             let data = yield this.repository.findUserById({ id });
             return [data];
+        });
+    }
+    getUserByPhone(params) {
+        return __awaiter(this, void 0, void 0, function* () {
+            let data = yield this.repository.findUserByContact(params);
+            return data;
+        });
+    }
+    deleteAccount(params) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const response = yield this.repository.patchAccountActiveStatus({
+                userId: params.userId,
+            });
+            return response;
+        });
+    }
+    /**
+     * Send an OTP via Twilio Verify Service
+     * @param phone - Phone number to send the OTP
+     * @returns {Promise<{ message: string }>}
+     */
+    sendVerificationCode(phone) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const response = yield this.client.verify.v2
+                .services("VAa1cad9454e7d4f80f443f9009ab24fe2")
+                .verifications.create({ to: "+91" + phone, channel: "sms" });
+            if (response.status === "pending") {
+                return { message: "OTP sent successfully" };
+            }
+            else {
+                throw new Error("Failed to send OTP");
+            }
+        });
+    }
+    /**
+     * Verify the OTP using Twilio Verify Service
+     * @param phone - Phone number to verify
+     * @param otp - OTP to verify
+     * @returns {Promise<any>}
+     */
+    verifyCode(phone, otp) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const response = yield this.client.verify.v2
+                .services("VAa1cad9454e7d4f80f443f9009ab24fe2")
+                .verificationChecks.create({ to: "+91" + phone, code: otp });
+            return response;
+        });
+    }
+    postSignInWithPhone(phone, otp) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const response = yield this.getUserByPhone({ contact: phone });
+            const data = {
+                id: response.id,
+            };
+            let jwtConfig = {
+                audience: "restrosync",
+                issuer: "zyptec pvt ltd",
+                subject: response.email,
+                expiresIn: "1y",
+            };
+            let signedToken = jsonwebtoken_1.default.sign(data, process.env.JWT_SECRET, jwtConfig);
+            let refreshToken = jsonwebtoken_1.default.sign(data, process.env.JWT_SECRET, jwtConfig);
+            const responseData = [
+                {
+                    firstName: response.firstName,
+                    lastName: response.lastName,
+                    email: response.email,
+                    role: response.role,
+                    contact: response.contact,
+                    countryCode: response.countryCode,
+                    loyaltyPoints: response.loyaltyPoints,
+                    refreshToken: refreshToken,
+                    token: signedToken,
+                },
+            ];
+            return responseData;
         });
     }
 }

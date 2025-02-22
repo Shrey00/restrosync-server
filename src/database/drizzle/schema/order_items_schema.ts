@@ -5,7 +5,7 @@ import {
   char,
   text,
   real,
-  json,
+  jsonb,
   time,
   boolean,
   integer,
@@ -21,11 +21,11 @@ import { orders } from "./orders_schema";
 export const orderItems = pgTable("order_items", {
   id: uuid("id").primaryKey().defaultRandom().notNull(),
   orderId: uuid("order_id").references(() => orders.id),
-  status: varchar("status", { length: 50 }).$type<
+  status: varchar("status", { length: 50}).$type<
     "Pending" | "Ready" | "Cancelled"
-  >(),
+  >().default("Pending"), 
   orderItem: uuid("order_item").references(() => menu.id),
+  addOns: jsonb("add_ons").$type<{id:string, sellingPrice: number, name: string}[]>(),
   quantity: smallint("quantity").default(1),
   amount: real("amount").notNull(),
-  addNote: text("add_note"),
 });

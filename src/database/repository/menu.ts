@@ -79,7 +79,6 @@ export class MenuRepository {
     restaurantId: string;
     queryParams: any;
   }) {
-    console.log("HERE", params.queryParams);
     try {
       const conditions = [];
       conditions.push(
@@ -145,7 +144,6 @@ export class MenuRepository {
       } else if (params?.queryParams?.sortBy === "descendingPrice") {
         query = query.orderBy(sql`${menu.sellingPrice} desc`);
       }
-      // console.log("-------------------------------------------------------------------------")
       const response = await query;
       // console.log(response);
       return response;
@@ -176,7 +174,26 @@ export class MenuRepository {
         throw new AppError(500, e?.message, "DB error", true);
     }
   }
-
+  async findMenuItemById(params: { menuItemId: string }) {
+    try {
+      const response = await db
+        .select({
+          id: menu.id,
+          name: menu.name,
+          images: menu.images,
+          rating: menu.rating,
+          markedPrice: menu.markedPrice,
+          sellingPrice: menu.sellingPrice,
+          variant: menu.variant,
+          discount: menu.discount,
+        })
+        .from(menu)
+        .where(sql`${menu.id}=${params.menuItemId}`);
+      return response;
+    } catch (e) {
+      console.log(e);
+    }
+  }
   async createMenuItem(params: MenuItem) {
     let {
       restaurantId,

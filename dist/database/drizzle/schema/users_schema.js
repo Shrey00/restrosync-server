@@ -14,6 +14,7 @@ exports.users = (0, pg_core_1.pgTable)("users", {
     emailVerified: (0, pg_core_1.boolean)("email_verified").default(false),
     contactVerified: (0, pg_core_1.boolean)("contact_verified").default(false),
     loyaltyPoints: (0, pg_core_1.smallint)("loyalty_points").default(10).notNull(),
+    accountActive: (0, pg_core_1.boolean)("account_active").default(true).notNull(),
     createdAt: (0, pg_core_1.timestamp)("created_at", {
         withTimezone: true,
         precision: 3,

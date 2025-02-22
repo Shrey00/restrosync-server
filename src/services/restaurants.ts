@@ -1,7 +1,7 @@
 import { Address } from "cluster";
 import { RestaurantRepository } from "../database/repository";
 import { Restaurant, RestaurantRequestBody } from "../types";
-import { DataListInstance } from "twilio/lib/rest/api/v2010/account/recording/addOnResult/payload/data";
+import { Offer } from "../types";
 export class Restaurants {
   private repository: any;
   constructor() {
@@ -58,6 +58,15 @@ export class Restaurants {
   }
   async updateRestaurant(params: Partial<RestaurantRequestBody>) {
     const data = this.repository.findAndUpdateRestaurant(params);
+    if (data) return data;
+  }
+  async getOffers(restaurant: Partial<Restaurant>) {
+    const { id } = restaurant;
+    const data = this.repository.findRestaurantOffers({ restaurantId: id });
+    if (data) return data;
+  }
+  async createOffers(params: Offer) {
+    const data = this.repository.createOffers(params);
     if (data) return data;
   }
 }

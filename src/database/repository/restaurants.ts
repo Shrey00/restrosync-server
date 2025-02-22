@@ -1,12 +1,16 @@
 import db from "../connection";
 import { sql } from "drizzle-orm";
-import { RestaurantRequestBody } from "../../types";
+import { RestaurantRequestBody, Offer } from "../../types";
 import { restaurants } from "../drizzle/schema/restaurants_schema";
 import { address } from "../drizzle/schema/address_schema";
+import { menu } from "../drizzle/schema/menu_schema";
+import { offers } from "../drizzle/schema/offers_schema";
 import { AddressType } from "../../types";
 import { relationUsersRestaurants } from "../drizzle/schema/user_restaurant_relation_schema";
 import { restaurantUpload } from "../../api/middlewares/storage";
 import { AppError, handler } from "../../utils/ErrorHandler";
+import { categories } from "../drizzle/schema/categories_schema";
+
 // function convertTo12Hour(time24 : string) {
 //   // Split the input time into hours, minutes, and seconds
 //   let [hours, minutes, seconds] = time24.split(':').map(Number);
@@ -155,6 +159,81 @@ export class RestaurantRepository {
     } catch (e) {
       if (e instanceof Error)
         throw new AppError(500, e?.message, "DB error", true);
+    }
+  }
+  async findRestaurantOffers(params: { restaurantId: string }) {
+    try {
+      const response = await db
+        .select({
+          id: offers.id,
+          image: offers.image,
+          offerName: offers.offerName,
+          discount: offers.discount,
+          freeItem: sql`freeMenuItem.name`,
+          startTime: sql`to_char(${offers.startTime}, 'DD-MM-YYYY')`,
+          endTime: sql`to_char(${offers.endTime}, 'DD-MM-YYYY')`,
+          maxDiscountAmount: offers.maxDiscountAmount,
+          minOrderValue: offers.minOrderValue,
+          usage: offers.usage,
+          maxUsage: offers.maxUsage,
+          couponCode: offers.couponCode,
+          category: categories.name,
+          item: sql`offerMenuItem.name`,
+        })
+        .from(offers)
+        .leftJoin(
+          sql`${menu} AS offerMenuItem`,
+          sql`${offers.item}=offerMenuItem.id`
+        )
+        .leftJoin(
+          sql`${menu} AS freeMenuItem`,
+          sql`${offers.freeItem}=freeMenuItem.id`
+        )
+        .leftJoin(categories, sql`${offers.category}=${categories.id}`) 
+        .where(sql`${offers.restaurantId}=${params.restaurantId}`);
+      return response;
+    } catch (e) {
+      if (e instanceof Error)
+        throw new AppError(500, e?.message, "DB error", false);
+    }
+  }
+  async createOffers(params: Offer) {
+    try {
+      const response = await db
+        .insert(offers)
+        .values({
+          image: params.image,
+          offerName: params.offerName,
+          discount: params.discount,
+          startTime: new Date(params.startTime),
+          endTime: new Date(params.endTime),
+          maxDiscountAmount: params.maxDiscountAmount,
+          maxUsage: params.maxUsage,
+          minOrderValue: params.minOrderValue,
+          couponCode: params.couponCode,
+          category: params.category === 'null' || params.category === null ? null : params.category,
+          item: params.item === 'null' || params.item === null ? null : params.item,
+          freeItem: params.freeItem === 'null' || params.freeItem === null ? null : params.freeItem,
+          restaurantId: params.restaurantId,
+        } as any)
+        .returning({
+          id: offers.id,
+          image: offers.image,
+          name: offers.offerName,
+          discount: offers.discount,
+          freeItem: offers.freeItem,
+          startTime: offers.startTime,
+          endTime: offers.endTime,
+          maxDiscountAmount: offers.maxDiscountAmount,
+          minOrderValue: offers.minOrderValue,
+          maxUsage: offers.maxUsage,
+          couponCode: offers.couponCode,
+          category: offers.category,
+        });
+      if (response.length > 0) return response;
+    } catch (e) {
+      if (e instanceof Error)
+        throw new AppError(500, e?.message, "DB error", false);
     }
   }
 }

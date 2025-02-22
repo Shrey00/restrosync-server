@@ -99,7 +99,14 @@ app.get("/my-orders", auth, async (req: Request, res: Response) => {
   res.status(200).json(response);
 });
 
-app.post("/update-order-status", auth, async (req: Request, res: Response) => {
+app.post("/restaurant-orders", auth, async (req: Request, res: Response) => {
+  const restaurantId = req.body?.restaurantId;
+  // const response = await orders.postOrder({ userId, ...req.body });
+  const response = await orders.getOrdersByRestaurant({ restaurantId, queryParams: req.query });
+  res.status(200).json(response);
+});
+
+app.patch("/update-order-status", auth, async (req: Request, res: Response) => {
   const userId = req.user?.id;
   const response = await orders.updateOrderStatus({
     orderStatus: req.body.orderStatus,
@@ -119,6 +126,23 @@ app.get("/order-status", auth, async (req: Request, res: Response) => {
   const response = await orders.getOrderStatus({ orderId: req.body.orderId });
   res.status(200).json(response);
 });
+
+app.get("/order-items", auth, async (req: Request, res: Response) => {
+  const { orderId } = req.query;
+  const response = await orders.getOrderItems({ orderId: orderId as string });
+  res.status(200).json(response);
+});
+app.patch(
+  "/order-item/set-status",
+  auth,
+  async (req: Request, res: Response) => {
+    const response = await orders.setOrderItemStatus({
+      orderItemId: req.body.orderItemId,
+      status: req.body.status,
+    });
+    res.status(200).json(response);
+  }
+);
 
 // server.listen(3000, () => {
 //   console.log("Server running on http://localhost:3000");

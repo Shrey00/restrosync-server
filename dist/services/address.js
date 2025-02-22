@@ -27,6 +27,12 @@ class Address {
             return response;
         });
     }
+    patchSelectedAddress(params) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const response = yield this.repository.updateAddressSelect(params);
+            return response;
+        });
+    }
     getAddresses(params) {
         return __awaiter(this, void 0, void 0, function* () {
             const response = yield this.repository.findAddressesByEntityId(params);

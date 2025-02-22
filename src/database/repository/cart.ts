@@ -20,6 +20,7 @@ export class CartRepository {
           cuisineType: menu.cuisineType,
           markedPrice: menu.markedPrice,
           discount: menu.discount,
+          addOns: cart.addOns
         })
         .from(cart)
         .innerJoin(menu, sql`${cart.menuItemId}=${menu.id}`)
@@ -34,8 +35,10 @@ export class CartRepository {
     userId: string;
     menuItemId: string;
     quantity: number;
+    addOns: { id: string, name: string, sellingPrice: number }[]
   }) {
     try {
+      console.log(params)
       const response = await db.transaction(async (txn) => {
         const itemPrice = await txn
           .select({ sellingPrice: menu.sellingPrice })
@@ -50,13 +53,15 @@ export class CartRepository {
             finalPrice: itemPrice[0].sellingPrice
               ? itemPrice[0].sellingPrice * params.quantity
               : itemPrice[0].sellingPrice,
-          })
+            addOns: params.addOns,
+          })  
           .returning({
             id: cart.id,
             userId: cart.userId,
             menuItemId: cart.menuItemId,
             quantity: cart.quantity,
             finalPrice: cart.finalPrice,
+            addOns: cart.addOns
           });
         return insertCartItem;
       });

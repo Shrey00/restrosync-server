@@ -19,6 +19,8 @@ app.post("/signin", async (req: Request, res: Response, next: NextFunction) => {
     const data = await users.postSignIn(req, res);
     const response = formatResponse(null, data)
     if (data.statusCode === 401) res.status(401).json(data);    
+    console.log(response)
+    console.log(data.statusCode)
     res.status(200).json(response);
   } catch (e) {
     next(e);
@@ -132,8 +134,11 @@ app.get(
   async (req: Request, res: Response, next: NextFunction) => {
     try {
       let response: { data: Array<User>; newToken?: null | string };
-      console.log(req.user);
-      const data = await users.getUser({ id: req.user?.id });
+      console.log("THIS IS IT")
+      // console.log(data)
+      console.log(req.user)
+      const data = await users.getUser({ id: req.user?.id });   
+ 
       response = formatResponse(req.newToken, data);
       res.status(200).json(response);
     } catch (e) {

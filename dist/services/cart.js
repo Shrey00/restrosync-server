@@ -17,15 +17,38 @@ class Cart {
     }
     postCartItem(params) {
         return __awaiter(this, void 0, void 0, function* () {
-            const { itemId, userId, restaurantId } = params;
+            const { userId, menuItemId, restaurantId } = params;
             const quantity = 1;
-            const response = yield this.repository.insertCartItem({ itemId, userId, quantity, restaurantId });
+            const response = yield this.repository.insertCartItem({
+                menuItemId,
+                userId,
+                quantity,
+                restaurantId,
+            });
             return response;
         });
     }
     getCartItems(params) {
         return __awaiter(this, void 0, void 0, function* () {
             const response = yield this.repository.findCartItems(params);
+            return response;
+        });
+    }
+    patchQuantity(params) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const response = yield this.repository.updateQuantity(params);
+            return response;
+        });
+    }
+    deleteCartItem(params) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const response = yield this.repository.deleteCartItem(params);
+            return response;
+        });
+    }
+    deleteAllCartItems(params) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const response = yield this.repository.deleteAllCartItems(params);
             return response;
         });
     }

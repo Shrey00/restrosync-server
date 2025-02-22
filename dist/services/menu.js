@@ -46,7 +46,7 @@ class Menu {
                 restaurantId,
                 queryParams,
             });
-            console.log("RESPONSE", data);
+            console.log("RESPONSE", data[0].items);
             if (data)
                 return data;
         });
@@ -58,7 +58,6 @@ class Menu {
                 restaurantId,
                 queryParams,
             });
-            console.log("RESPONSE", data);
             if (data)
                 return data;
         });
@@ -108,6 +107,12 @@ class Menu {
     search(params) {
         return __awaiter(this, void 0, void 0, function* () {
             const data = yield this.repository.search(params);
+            return data;
+        });
+    }
+    getTopTenItemsByOrders(params) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const data = yield this.repository.getTopTenItems(params);
             return data;
         });
     }

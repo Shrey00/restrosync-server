@@ -183,6 +183,62 @@
       "when": 1735839723305,
       "tag": "0025_known_moondragon",
       "breakpoints": true
+    },
+    {
+      "idx": 26,
+      "version": "7",
+      "when": 1737985519164,
+      "tag": "0026_whole_malcolm_colcord",
+      "breakpoints": true
+    },
+    {
+      "idx": 27,
+      "version": "7",
+      "when": 1738083051124,
+      "tag": "0027_lethal_wallflower",
+      "breakpoints": true
+    },
+    {
+      "idx": 28,
+      "version": "7",
+      "when": 1738826207844,
+      "tag": "0028_uneven_pete_wisdom",
+      "breakpoints": true
+    },
+    {
+      "idx": 29,
+      "version": "7",
+      "when": 1739368252995,
+      "tag": "0029_supreme_scarecrow",
+      "breakpoints": true
+    },
+    {
+      "idx": 30,
+      "version": "7",
+      "when": 1739370511329,
+      "tag": "0030_windy_giant_man",
+      "breakpoints": true
+    },
+    {
+      "idx": 31,
+      "version": "7",
+      "when": 1739386548208,
+      "tag": "0031_flowery_molly_hayes",
+      "breakpoints": true
+    },
+    {
+      "idx": 32,
+      "version": "7",
+      "when": 1739609149072,
+      "tag": "0032_vengeful_venom",
+      "breakpoints": true
+    },
+    {
+      "idx": 33,
+      "version": "7",
+      "when": 1739863208184,
+      "tag": "0033_hesitant_punisher",
+      "breakpoints": true
     }
   ]
 }

@@ -26,24 +26,6 @@ class MenuRepository {
         return __awaiter(this, void 0, void 0, function* () {
             var _a, _b, _c, _d, _e;
             try {
-                // Object.keys(params.queryParams).forEach((key, index) => {
-                //   if (
-                //     Object.keys(params.queryParams).length > 0 &&
-                //     index < 2 &&
-                //     params.restaurantId
-                //   ) {
-                //     queryCondition += ` and `;
-                //   }
-                //   if (key === "searchQuery") {
-                //     queryCondition += `${menu.name}=${params.queryParams[key]}`;
-                //   }
-                //   if (key === "cuisineType") {
-                //     queryCondition += `${menu.cuisineType}=${params.queryParams[key]}`;
-                //   }
-                //   if (key === "ratingFrom") {
-                //     queryCondition += `${menu.rating}>${params.queryParams[key]}`;
-                //   }
-                // });
                 const conditions = [];
                 conditions.push((0, drizzle_orm_1.or)((0, drizzle_orm_1.sql) `${menu_schema_1.menu.variant}=${"parent"}`, (0, drizzle_orm_1.sql) `${menu_schema_1.menu.variant}=${"none"}`));
                 if (params.restaurantId) {
@@ -203,7 +185,7 @@ class MenuRepository {
             }
             catch (e) {
                 if (e instanceof Error)
-                    throw new ErrorHandler_1.AppError(500, e === null || e === void 0 ? void 0 : e.message, "DB error", false);
+                    throw new ErrorHandler_1.AppError(500, e === null || e === void 0 ? void 0 : e.message, "DB error", true);
             }
         });
     }
@@ -367,6 +349,41 @@ class MenuRepository {
                     .innerJoin(categories_schema_1.categories, (0, drizzle_orm_1.sql) `${menu_schema_1.menu.category}=${categories_schema_1.categories.id}`)
                     .innerJoin(restaurants_schema_1.restaurants, (0, drizzle_orm_1.sql) `${menu_schema_1.menu.restaurantId}=${restaurants_schema_1.restaurants.id}`)
                     .where((0, drizzle_orm_1.sql) `(${menu_schema_1.menu.name} ILIKE ${"%" + params.searchQuery + "%"} or ${categories_schema_1.categories.name} ILIKE ${"%" + params.searchQuery + "%"}) and (${menu_schema_1.menu.variant}=${"parent"} or ${menu_schema_1.menu.variant}=${"none"})`);
+                return response;
+            }
+            catch (e) {
+                if (e instanceof Error)
+                    throw new ErrorHandler_1.AppError(500, e === null || e === void 0 ? void 0 : e.message, "DB error", true);
+            }
+        });
+    }
+    getTopTenItems(params) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const response = yield connection_1.default
+                    .select({
+                    id: menu_schema_1.menu.id,
+                    name: menu_schema_1.menu.name,
+                    available: menu_schema_1.menu.available,
+                    cuisineType: menu_schema_1.menu.cuisineType,
+                    orders: menu_schema_1.menu.orders,
+                    description: menu_schema_1.menu.description,
+                    rating: menu_schema_1.menu.rating,
+                    reviewSummary: menu_schema_1.menu.reviewSummary,
+                    discount: menu_schema_1.menu.discount,
+                    markedPrice: menu_schema_1.menu.markedPrice,
+                    sellingPrice: menu_schema_1.menu.sellingPrice,
+                    calories: menu_schema_1.menu.calories,
+                    healthScore: menu_schema_1.menu.healthScore,
+                    showHealthInfo: menu_schema_1.menu.showHealthInfo,
+                    images: menu_schema_1.menu.images,
+                    variant: menu_schema_1.menu.variant,
+                })
+                    .from(menu_schema_1.menu)
+                    .innerJoin(restaurants_schema_1.restaurants, (0, drizzle_orm_1.sql) `${menu_schema_1.menu.restaurantId}=${restaurants_schema_1.restaurants.id}`)
+                    .where((0, drizzle_orm_1.sql) `${restaurants_schema_1.restaurants.softwareId}=${params.softwareId} AND (${menu_schema_1.menu.variant}=${"parent"} OR ${menu_schema_1.menu.variant}=${"none"})`)
+                    .orderBy((0, drizzle_orm_1.sql) `${menu_schema_1.menu.orders} desc`)
+                    .limit(10);
                 return response;
             }
             catch (e) {

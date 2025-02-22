@@ -9,7 +9,7 @@ exports.cart = (0, pg_core_1.pgTable)("cart", {
     userId: (0, pg_core_1.uuid)("user_id")
         .notNull()
         .references(() => users_schema_1.users.id),
-    itemId: (0, pg_core_1.uuid)("item_id")
+    menuItemId: (0, pg_core_1.uuid)("menu_item_id")
         .notNull()
         .references(() => menu_schema_1.menu.id),
     quantity: (0, pg_core_1.smallint)("quantity").notNull().default(1),

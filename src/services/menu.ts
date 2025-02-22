@@ -55,8 +55,11 @@ export class Menu {
       restaurantId,
       queryParams,
     });
-    console.log("RESPONSE", data[0].items);
     if (data) return data;
+  }
+  async getMenuItem(params: {menuItemId: string}) {
+    const data = await this.repository.findMenuItemById(params);
+    return data;
   }
   async getMenuItemsCategoryWise(
     params: Partial<MenuItemRequestBody>,

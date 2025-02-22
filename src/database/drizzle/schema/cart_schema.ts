@@ -11,9 +11,9 @@ import {
   boolean,
   integer,
   smallint,
+  jsonb,
   timestamp,
 } from "drizzle-orm/pg-core";
-
 
 import { menu } from "./menu_schema";
 import { users } from "./users_schema";
@@ -27,4 +27,5 @@ export const cart = pgTable("cart", {
     .references(() => menu.id),
   quantity: smallint("quantity").notNull().default(1),
   finalPrice: real("final_price"),
+  addOns: jsonb("add_ons").$type<{id:string, sellingPrice: number, name: string}[]>(),
 });

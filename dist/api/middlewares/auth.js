@@ -57,7 +57,6 @@ function auth(req, res, next) {
         if (isWebBrowser)
             refreshToken = req.cookies.refreshToken;
         if (authorizationHeader) {
-            console.log("USSER");
             const tokenParts = authorizationHeader === null || authorizationHeader === void 0 ? void 0 : authorizationHeader.split(" ");
             if (tokenParts.length === 2 && tokenParts[0].toLowerCase() == "bearer") {
                 const token = tokenParts[1];
