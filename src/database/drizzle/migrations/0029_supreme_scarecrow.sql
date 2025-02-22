@@ -1,0 +1,1 @@
+ALTER TABLE "offers" ADD COLUMN "min_order_value" smallint NOT NULL;
