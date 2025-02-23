@@ -28,9 +28,7 @@ app.use(cookieParser());
 app.use(
   cors({
     exposedHeaders: "Authorization",
-    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
     allowedHeaders: ["Content-Type", "Authorization"],
-    origin: "*",  
   })
 );
 app.use(express.urlencoded({ extended: true }));
