@@ -29,6 +29,7 @@ app.use(
   cors({
     exposedHeaders: "Authorization",
     allowedHeaders: ["Content-Type", "Authorization"],
+    origin:"https://restrosync.zyptec.com"
   })
 );
 app.use(express.urlencoded({ extended: true }));
