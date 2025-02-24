@@ -26,12 +26,24 @@ const app = express();
 app.use("/assets", express.static(path.join(__dirname, "assets")));
 app.use(cookieParser());
 app.use(
-  cors({
-    exposedHeaders: "Authorization",
-    allowedHeaders: ["Content-Type", "Authorization"],
-    origin:"https://restrosync.zyptec.com"
+  cors((req, callback) => {
+    const allowedOrigins = ["https://restrosync.zyptec.com"]; // Add any other specific domains if needed
+    const origin = req.header("Origin");
+
+    // Default options
+    let corsConfig = {
+      methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
+      allowedHeaders: ["Content-Type", "Authorization"],
+      origin: true,
+      credentials: false,
+    };
+    if (origin && allowedOrigins.includes(origin)) {
+      corsConfig.credentials = true;
+    }
+    callback(null, corsConfig);
   })
 );
+
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
