@@ -6,9 +6,6 @@ import { auth } from "./middlewares/auth";
 import path from "path";
 import { restaurantUpload } from "./middlewares/storage";
 import { bannerUpload } from "./middlewares/storage";
-import { JwtConfig, JwtPayloadData } from "../types";
-import { Jwt, JwtPayload } from "jsonwebtoken";
-import formatResponse from "../utils/formatResponse";
 
 const app = Router();
 const restaurants = new Restaurants();
@@ -35,12 +32,12 @@ app.post(
   }
 );
 
-//:id - restaurantId
-app.get("/:id", async (req: Request, res: Response) => {
-  const { id } = req.params;
-  const data = await restaurants.getRestaurant({ id });
-  res.status(200).json(data);
-});
+// //:id - restaurantId
+// app.get("/:id", async (req: Request, res: Response) => {
+//   const { id } = req.params;
+//   const data = await restaurants.getRestaurant({ id });
+//   res.status(200).json(data);
+// });
 
 app.get("/list", auth, async (req: Request, res: Response) => {
   const user = req.user;
@@ -78,8 +75,14 @@ app.patch(
 
 app.post("/offers", auth, async (req: Request, res: Response) => {
   const response = await restaurants.getOffers(req.body);
-  console.log(response);
-  console.log("IT IS")
+  res.status(200).json(response);
+});
+app.get("/active-offers", auth, async (req: Request, res: Response) => {
+  const response = await restaurants.getActiveOffers();
+  res.status(200).json(response);
+});
+app.post ("/apply-offer", auth, async (req: Request, res: Response) => {
+  const response = await restaurants.getActiveOffers();
   res.status(200).json(response);
 });
 app.post(

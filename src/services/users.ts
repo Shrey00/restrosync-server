@@ -96,7 +96,7 @@ export class Users {
       return {
         statusCode: 401,
         name: "Unauthorized",
-        desc: "Wrong email or password",
+        desc: "Invalid email or password",
       };
     const checkPassword: boolean = await bcrypt.compare(
       password,
@@ -150,7 +150,7 @@ export class Users {
       throw new AppError(
         401,
         "Unauthorized: Please check your email/password",
-        "Wrong email or password",
+        "Invalid email or password",
         true
       );
     }

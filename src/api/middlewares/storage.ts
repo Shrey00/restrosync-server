@@ -1,12 +1,12 @@
 import { Request, Response, NextFunction } from "express";
 import multer from "multer";
-import fs from 'fs';
-import path from 'path';
+import fs from "fs";
+import path from "path";
 const RestaurantStorage = multer.diskStorage({
   destination: function (req, file, cb) {
     try {
-      const destPath = path.join(process.cwd(), '/assets/restaurant');
-      
+      const destPath = path.join(process.cwd(), "/assets/restaurant");
+
       // Ensure the destination directory exists
       if (!fs.existsSync(destPath)) {
         fs.mkdirSync(destPath, { recursive: true });
@@ -21,7 +21,7 @@ const RestaurantStorage = multer.diskStorage({
   filename: function (req, file, cb) {
     try {
       const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e6);
-      const filename = file.fieldname + "-" + uniqueSuffix;
+      const filename = file.fieldname + "-" + uniqueSuffix + file.mimetype;
       cb(null, filename);
     } catch (error) {
       console.error("Error in generating filename: ", error);
@@ -32,7 +32,7 @@ const RestaurantStorage = multer.diskStorage({
 const BannerStorage = multer.diskStorage({
   destination: function (req, file, cb) {
     try {
-      const destPath = path.join(process.cwd(), '/assets/banner');
+      const destPath = path.join(process.cwd(), "/assets/banner");
       // Ensure the destination directory exists
       if (!fs.existsSync(destPath)) {
         fs.mkdirSync(destPath, { recursive: true });
@@ -70,8 +70,8 @@ const UserStorage = multer.diskStorage({
 const MenuStorage = multer.diskStorage({
   destination: function (req, file, cb) {
     try {
-      const destPath = path.join(process.cwd(), '/assets/menu');
-      
+      const destPath = path.join(process.cwd(), "/assets/menu");
+
       // Ensure the destination directory exists
       if (!fs.existsSync(destPath)) {
         fs.mkdirSync(destPath, { recursive: true });
@@ -86,7 +86,9 @@ const MenuStorage = multer.diskStorage({
   filename: function (req, file, cb) {
     try {
       const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e6);
-      const filename = file.fieldname + "-" + uniqueSuffix;
+      const fileExtension = file.mimetype.split("/");
+      const extension = fileExtension[fileExtension.length - 1];
+      const filename = file.fieldname + "-" + uniqueSuffix + "." + extension;
       cb(null, filename);
     } catch (error) {
       console.error("Error in generating filename: ", error);

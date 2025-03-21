@@ -11,42 +11,11 @@ export class Menu {
     this.repository = new MenuRepository();
   }
   async postMenuItem(menuItem: Partial<MenuItemRequestBody>) {
-    let {
-      userId,
-      restaurantId,
-      category,
-      name,
-      type,
-      cuisineType,
-      orders,
-      available,
-      description,
-      markedPrice,
-      sellingPrice,
-      discount,
-      calories,
-      healthScore,
-      showHealthInfo,
-      images,
-    } = menuItem;
-    const data: { id: string }[] = await this.repository.createMenuItem({
-      userId,
-      restaurantId,
-      category,
-      name,
-      type,
-      available,
-      cuisineType,
-      orders,
-      description,
-      markedPrice,
-      sellingPrice,
-      discount,
-      calories,
-      healthScore,
-      showHealthInfo,
-      images,
-    });
+    const data = await this.repository.createMenuItem(menuItem);
+    return data;
+  }
+  async patchMenuItem(menuItem: Partial<MenuItemRequestBody>) {
+    const data = await this.repository.patchMenuItem(menuItem);
     return data;
   }
   async getMenuItems(params: Partial<MenuItemRequestBody>, queryParams: any) {
@@ -57,7 +26,7 @@ export class Menu {
     });
     if (data) return data;
   }
-  async getMenuItem(params: {menuItemId: string}) {
+  async getMenuItem(params: { menuItemId: string }) {
     const data = await this.repository.findMenuItemById(params);
     return data;
   }

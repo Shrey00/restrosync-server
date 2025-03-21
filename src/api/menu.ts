@@ -6,9 +6,10 @@ import { NextFunction, Request, response, Response } from "express";
 import { Router } from "express";
 import { Menu } from "../services";
 import path, { format } from "path";
+import { auth } from "./middlewares/auth";
 import { menuUpload as upload } from "./middlewares/storage";
 import formatResponse from "../utils/formatResponse";
-
+import { generateImagePaths } from "../utils/generateImagePaths";
 const app = Router();
 const menu = new Menu();
 // Define the types for `req.files` fields
@@ -36,16 +37,28 @@ app.post(
 app.post(
   "/add-item",
   upload.array("images"),
+  auth,
   async (req: Request, res: Response) => {
-    const images = req.files as any;
-    const imagePaths = images?.map((file: any) =>
-      path.join("menu_item", file?.filename)
-    );
+    const images = req.files;
+    const imagePaths = generateImagePaths(images as Express.Multer.File[]);
     req.body.images = imagePaths ? imagePaths : [];
     req.body.userId = req.user?.id;
     const response: { id: string }[] = await menu.postMenuItem(req.body);
     const formattedResponse = formatResponse(req.newToken, response);
     res.status(200).json(formattedResponse);
+  }
+);
+app.patch(
+  "/update-item",
+  upload.array("images"),
+  auth,
+  async (req: Request, res: Response) => {
+    const images = req.files;
+    const imagePaths = generateImagePaths(images as Express.Multer.File[]);
+    req.body.images = imagePaths ? imagePaths : [];
+    req.body.userId = req.user?.id;
+    const response: { id: string }[] = await menu.patchMenuItem(req.body);
+    res.status(200).json(response);
   }
 );
 
@@ -106,7 +119,6 @@ app.get("/popular-items/:softwareId", async (req: Request, res: Response) => {
   const response = await menu.getTopTenItemsByOrders({
     softwareId: req.params.softwareId,
   });
-  console.log(response)
   res.status(200).json(response);
 });
 app.get("/search", async (req: Request, res: Response) => {

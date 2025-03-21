@@ -45,7 +45,7 @@ export class Restaurants {
   async getRestaurant(restaurant: Partial<Restaurant>) {
     const { id } = restaurant;
     const data = this.repository.findRestaurant({ id });
-    if (data) return data;
+  if (data) return data;
   }
   async getRestaurantsByUsers(params: Partial<RestaurantRequestBody>) {
     const { userId } = params;
@@ -64,6 +64,10 @@ export class Restaurants {
     const { id } = restaurant;
     const data = this.repository.findRestaurantOffers({ restaurantId: id });
     if (data) return data;
+  }
+  async getActiveOffers() {
+    const data = this.repository.findActiveOffers();
+    return data;
   }
   async createOffers(params: Offer) {
     const data = this.repository.createOffers(params);

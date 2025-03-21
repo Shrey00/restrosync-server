@@ -32,7 +32,7 @@ export const offers = pgTable("offers", {
   minOrderValue: smallint("min_order_value").notNull(),
   maxUsage: smallint("max_usage").notNull(),
   usage: smallint("usage").default(0),
-  couponCode: varchar("coupon_code", { length: 16 }),
+  couponCode: varchar("coupon_code", { length: 16 }).unique(),
   item: uuid("item").references(() => menu.id),
   category: integer("category").references(() => categories.id),
   restaurantId: uuid("restaurant_id").references(() => restaurants.id),

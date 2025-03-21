@@ -3,6 +3,7 @@ export interface MenuItem {
     name: string,
     restaurantId: string,
     category: string,
+    categoryId: number,
     type: string,
     cuisineType: string,
     orders?: number,

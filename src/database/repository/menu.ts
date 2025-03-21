@@ -10,6 +10,7 @@ import { menuVariants } from "../drizzle/schema/menu_variants_schema";
 import { restaurantRoutes } from "../../api";
 import { restaurants } from "../drizzle/schema/restaurants_schema";
 import { query } from "express";
+
 export class MenuRepository {
   async findMenuItems(params: { restaurantId: string; queryParams: any }) {
     try {
@@ -41,7 +42,8 @@ export class MenuRepository {
         .select({
           id: menu.id,
           name: menu.name,
-          // category: categories.name,
+          category: categories.name,
+          categoryId: categories.id,
           available: menu.available,
           type: types.name,
           cuisineType: menu.cuisineType,
@@ -128,7 +130,7 @@ export class MenuRepository {
             'sellingPrice', ${menu.sellingPrice},
             'calories', ${menu.calories},
             'healthScore', ${menu.healthScore},
-            'healthInfo', ${menu.showHealthInfo},
+            'showHealthInfo', ${menu.showHealthInfo},
             'images', ${menu.images},
             'variant', ${menu.variant}
           ))`,
@@ -161,7 +163,6 @@ export class MenuRepository {
           markedPrice: menu.markedPrice,
           sellingPrice: menu.sellingPrice,
           variant: menu.variant,
-          variantName: menuVariants.name,
           discount: menu.discount,
         })
         .from(menuVariants)
@@ -184,8 +185,15 @@ export class MenuRepository {
           rating: menu.rating,
           markedPrice: menu.markedPrice,
           sellingPrice: menu.sellingPrice,
+          description: menu.description,
           variant: menu.variant,
           discount: menu.discount,
+          available: menu.available,
+          cuisineType: menu.cuisineType,
+          reviewSummary: menu.reviewSummary,
+          calories: menu.calories,
+          healthScore: menu.healthScore,
+          showHealthInfo: menu.showHealthInfo,
         })
         .from(menu)
         .where(sql`${menu.id}=${params.menuItemId}`);
@@ -199,6 +207,7 @@ export class MenuRepository {
       restaurantId,
       name,
       category,
+      categoryId,
       type,
       cuisineType,
       description,
@@ -212,13 +221,15 @@ export class MenuRepository {
       images,
       variant,
     } = params;
+    console.log("THIS IS THAT I NEED");
+    console.log(params);
     try {
       const response = await db
         .insert(menu)
         .values({
           restaurantId,
           name,
-          category,
+          category: categoryId,
           type,
           available,
           cuisineType,
@@ -236,6 +247,7 @@ export class MenuRepository {
           id: menu.id,
           name: menu.name,
           category: menu.category,
+          categoryId: categories.id,
           type: menu.type,
           available: menu.available,
           cuisineType: menu.cuisineType,
@@ -250,6 +262,56 @@ export class MenuRepository {
           showHealthInfo: menu.showHealthInfo,
           images: menu.images,
         });
+      if (response.length) return response;
+    } catch (e) {
+      if (e instanceof Error)
+        throw new AppError(500, e?.message, "DB error", false);
+    }
+  }
+  async patchMenuItem(params: { [key: string]: any }) {
+    const updateKeys: { [key: string]: any } = {};
+    Object.keys(params).forEach((key: string) => {
+      if (
+        params[key] &&
+        key != "id" &&
+        key != "autoCalculateSellingPrice" &&
+        key != "restaurantId" &&
+        key != "userId" &&
+        key != "categoryId" &&
+        key != "addons"
+      ) {
+        if (key === "category") {
+          updateKeys[key] = params["categoryId"];
+        } else if (key === "images" && updateKeys[key]?.length) {
+          updateKeys[key] = params[key];
+        } else {
+          updateKeys[key] = params[key];
+        }
+      }
+    });
+    try {
+      const response = await db
+        .update(menu)
+        .set(updateKeys)
+        .returning({
+          id: menu.id,
+          name: menu.name,
+          category: menu.category ?? null,
+          type: menu.type,
+          available: menu.available,
+          cuisineType: menu.cuisineType,
+          description: menu.description,
+          markedPrice: menu.markedPrice,
+          sellingPrice: menu.sellingPrice,
+          discount: menu.discount,
+          calories: menu.calories,
+          healthScore: menu.healthScore,
+          rating: menu.rating,
+          variant: menu.variant,
+          showHealthInfo: menu.showHealthInfo,
+          images: menu.images,
+        })
+        .where(sql`${menu.id}=${params.id}`);
       if (response.length) return response;
     } catch (e) {
       if (e instanceof Error)

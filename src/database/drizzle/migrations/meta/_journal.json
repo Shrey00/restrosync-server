@@ -239,6 +239,13 @@
       "when": 1739863208184,
       "tag": "0033_hesitant_punisher",
       "breakpoints": true
+    },
+    {
+      "idx": 34,
+      "version": "7",
+      "when": 1741677711461,
+      "tag": "0034_gray_revanche",
+      "breakpoints": true
     }
   ]
 }

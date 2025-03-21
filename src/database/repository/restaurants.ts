@@ -1,5 +1,5 @@
 import db from "../connection";
-import { sql } from "drizzle-orm";
+import { and, sql } from "drizzle-orm";
 import { RestaurantRequestBody, Offer } from "../../types";
 import { restaurants } from "../drizzle/schema/restaurants_schema";
 import { address } from "../drizzle/schema/address_schema";
@@ -67,6 +67,7 @@ export class RestaurantRepository {
     }
   }
   async findRestaurant(params: { id: string }) {
+    console.log("IS IT ME");
     const { id } = params;
     try {
       const response = await db
@@ -93,7 +94,6 @@ export class RestaurantRepository {
   }
   async findRestaurants(params: { softwareId: string }) {
     const { softwareId } = params;
-    console.log("Whaaat");
     try {
       const response = await db
         .select({
@@ -189,7 +189,7 @@ export class RestaurantRepository {
           sql`${menu} AS freeMenuItem`,
           sql`${offers.freeItem}=freeMenuItem.id`
         )
-        .leftJoin(categories, sql`${offers.category}=${categories.id}`) 
+        .leftJoin(categories, sql`${offers.category}=${categories.id}`)
         .where(sql`${offers.restaurantId}=${params.restaurantId}`);
       return response;
     } catch (e) {
@@ -211,9 +211,16 @@ export class RestaurantRepository {
           maxUsage: params.maxUsage,
           minOrderValue: params.minOrderValue,
           couponCode: params.couponCode,
-          category: params.category === 'null' || params.category === null ? null : params.category,
-          item: params.item === 'null' || params.item === null ? null : params.item,
-          freeItem: params.freeItem === 'null' || params.freeItem === null ? null : params.freeItem,
+          category:
+            params.category === "null" || params.category === null
+              ? null
+              : params.category,
+          item:
+            params.item === "null" || params.item === null ? null : params.item,
+          freeItem:
+            params.freeItem === "null" || params.freeItem === null
+              ? null
+              : params.freeItem,
           restaurantId: params.restaurantId,
         } as any)
         .returning({
@@ -231,6 +238,37 @@ export class RestaurantRepository {
           category: offers.category,
         });
       if (response.length > 0) return response;
+    } catch (e) {
+      if (e instanceof Error)
+        throw new AppError(500, e?.message, "DB error", false);
+    }
+  }
+  //@INFO: category and menuItemId are currently not being used in the consumer app. The coupon applies on the total amount regardless of category or item.
+  async findActiveOffers() {
+    try {
+      const response = await db
+        .select({
+          id: offers.id,
+          name: offers.offerName,
+          discount: offers.discount,
+          freeItem: {
+            id: menu.id,
+            name: menu.name,
+            sellingPrice: menu.sellingPrice,
+          },
+          startTime: offers.startTime,
+          endTime: offers.endTime,
+          maxDiscountAmount: offers.maxDiscountAmount,
+          minOrderValue: offers.minOrderValue,
+          maxUsage: offers.maxUsage,
+          couponCode: offers.couponCode,
+        })
+        .from(offers)
+        .leftJoin(menu, sql`${offers.freeItem}=${menu.id}`)
+        .where(
+          and(sql`${offers.startTime} < NOW()`, sql`${offers.endTime} > NOW()`)
+        );
+      return response;
     } catch (e) {
       if (e instanceof Error)
         throw new AppError(500, e?.message, "DB error", false);

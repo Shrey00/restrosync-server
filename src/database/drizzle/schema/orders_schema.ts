@@ -51,6 +51,7 @@ export const orders = pgTable("orders", {
   }).notNull(),
   address: uuid("address").references(() => address.id),
   note: text("note"),
+  discount: real("discount"),
   restaurantId: uuid("restaurant_id").references(() => restaurants.id),
   createdAt: timestamp("order_time", {
     withTimezone: true,

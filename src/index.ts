@@ -15,7 +15,7 @@ import {
   userRoutes,
   orderRoutes,
 } from "./api";
-import { AppError, handler } from "./utils/ErrorHandler";
+import { AppError } from "./utils/ErrorHandler";
 import cookieParser from "cookie-parser";
 // const envFile = process.env.NODE_ENV === 'development' ? '.env.development' : '.env.development';
 // dotenv.config({ path: envFile });
@@ -23,11 +23,14 @@ import cookieParser from "cookie-parser";
 const app = express();
 
 //Middlwares
-app.use("/assets", express.static(path.join(__dirname, "assets")));
+
 app.use(cookieParser());
 app.use(
   cors((req, callback) => {
-    const allowedOrigins = ["https://restrosync.zyptec.com"]; // Add any other specific domains if needed
+    const allowedOrigins = [
+      "https://restrosync.zyptec.com",
+      "http://localhost:3001",
+    ]; // Add any other specific domains if needed
     const origin = req.header("Origin");
 
     // Default options
@@ -46,7 +49,7 @@ app.use(
 
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
-
+app.use("/assets", express.static(path.join(__dirname, "assets", "menu")));
 //Routes
 app.use("/", userRoutes);
 app.use("/restaurants", restaurantRoutes);

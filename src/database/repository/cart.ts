@@ -20,7 +20,8 @@ export class CartRepository {
           cuisineType: menu.cuisineType,
           markedPrice: menu.markedPrice,
           discount: menu.discount,
-          addOns: cart.addOns
+          category: menu.category,
+          addOns: cart.addOns,
         })
         .from(cart)
         .innerJoin(menu, sql`${cart.menuItemId}=${menu.id}`)
@@ -35,10 +36,10 @@ export class CartRepository {
     userId: string;
     menuItemId: string;
     quantity: number;
-    addOns: { id: string, name: string, sellingPrice: number }[]
+    addOns: { id: string; name: string; sellingPrice: number }[];
   }) {
     try {
-      console.log(params)
+      console.log(params);
       const response = await db.transaction(async (txn) => {
         const itemPrice = await txn
           .select({ sellingPrice: menu.sellingPrice })
@@ -54,14 +55,14 @@ export class CartRepository {
               ? itemPrice[0].sellingPrice * params.quantity
               : itemPrice[0].sellingPrice,
             addOns: params.addOns,
-          })  
+          })
           .returning({
             id: cart.id,
             userId: cart.userId,
             menuItemId: cart.menuItemId,
             quantity: cart.quantity,
             finalPrice: cart.finalPrice,
-            addOns: cart.addOns
+            addOns: cart.addOns,
           });
         return insertCartItem;
       });
@@ -83,7 +84,7 @@ export class CartRepository {
         throw new AppError(500, e?.message, "DB error", false);
     }
   }
-  async deleteCartItem(params: { itemId: string;}) {
+  async deleteCartItem(params: { itemId: string }) {
     try {
       const response = await db
         .delete(cart)
@@ -91,10 +92,15 @@ export class CartRepository {
       return response;
     } catch (e) {
       if (e instanceof Error)
-        throw new AppError(500, e?.message, "Error Occured while deleting the cart item.", false);
+        throw new AppError(
+          500,
+          e?.message,
+          "Error Occured while deleting the cart item.",
+          false
+        );
     }
   }
-  async deleteAllCartItems(params: { userId: string;}) {
+  async deleteAllCartItems(params: { userId: string }) {
     try {
       const response = await db
         .delete(cart)
@@ -102,7 +108,12 @@ export class CartRepository {
       return response;
     } catch (e) {
       if (e instanceof Error)
-        throw new AppError(500, e?.message, "Error Occured while deleting the cart item.", false);
+        throw new AppError(
+          500,
+          e?.message,
+          "Error Occured while deleting the cart item.",
+          false
+        );
     }
   }
 }

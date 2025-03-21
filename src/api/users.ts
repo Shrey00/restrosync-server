@@ -19,7 +19,7 @@ app.post("/signin", async (req: Request, res: Response, next: NextFunction) => {
     const data = await users.postSignIn(req, res);
     const response = formatResponse(null, data)
     if (data.statusCode === 401) res.status(401).json(data);    
-    console.log(response)
+    console.log("THIS ONE?", response)
     console.log(data.statusCode)
     res.status(200).json(response);
   } catch (e) {
