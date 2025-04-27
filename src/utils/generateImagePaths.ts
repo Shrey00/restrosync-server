@@ -8,3 +8,4 @@ export function generateImagePaths(images: Express.Multer.File[]) {
   });
   return imagePaths;
 }
+  

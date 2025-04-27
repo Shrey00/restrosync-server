@@ -66,6 +66,7 @@ wss.on("connection", (ws: Websocket, req) => {
     const message = JSON.parse(data);
     switch (message.type) {
       case "join":
+        console.log("client-joined", orderId);
         clients.set(orderId, ws);
         break;
     }
@@ -80,7 +81,10 @@ wss.on("connection", (ws: Websocket, req) => {
 });
 
 function sendOrderUpdate(orderId: string, message: string) {
+  console.log(orderId);
   const client = clients.get(orderId);
+  console.log("Thats client");
+  console.log(client);
   if (client) {
     client.send(JSON.stringify({ orderStatus: message }));
   }
@@ -102,7 +106,10 @@ app.get("/my-orders", auth, async (req: Request, res: Response) => {
 app.post("/restaurant-orders", auth, async (req: Request, res: Response) => {
   const restaurantId = req.body?.restaurantId;
   // const response = await orders.postOrder({ userId, ...req.body });
-  const response = await orders.getOrdersByRestaurant({ restaurantId, queryParams: req.query });
+  const response = await orders.getOrdersByRestaurant({
+    restaurantId,
+    queryParams: req.query,
+  });
   res.status(200).json(response);
 });
 

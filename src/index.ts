@@ -46,10 +46,10 @@ app.use(
     callback(null, corsConfig);
   })
 );
-
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
-app.use("/assets", express.static(path.join(__dirname, "assets", "menu")));
+app.use("/", express.static("assets"));
+// app.use("/assets", express.static(path.join(__dirname, "assets", "menu")));
 //Routes
 app.use("/", userRoutes);
 app.use("/restaurants", restaurantRoutes);

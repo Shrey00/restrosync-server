@@ -2,7 +2,6 @@ import { Address } from "cluster";
 import { MenuRepository } from "../database/repository";
 import {
   MenuItemRequestBody,
-  MenuVariants,
   RestaurantRequestBody,
 } from "../types";
 export class Menu {

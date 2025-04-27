@@ -276,7 +276,7 @@ export class OrdersRepository {
     const response = await db
       .update(orders)
       .set({ deliveryStatus: orderStatus })
-      .where(sql`${orders.id}=${params.orderId}`);
+      .where(sql`${orders.orderId}=${params.orderId}`);
     return response;
   }
   async getPendingOrderDetails(params: { userId: string }) {

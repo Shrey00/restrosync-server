@@ -106,11 +106,11 @@ export class MenuRepository {
         conditions.push(sql`${menu.cuisineType}='non-veg'`);
       }
       if (params?.queryParams.ratingFrom === "rating_2") {
-        conditions.push(sql`${menu.rating}>2`);
+        conditions.push(sql`${menu.rating}>=2`);
       } else if (params?.queryParams.ratingFrom === "rating_3") {
-        conditions.push(sql`${menu.rating}>3`);
+        conditions.push(sql`${menu.rating}>=3`);
       } else if (params?.queryParams.ratingFrom === "rating_4") {
-        conditions.push(sql`${menu.rating}>4`);
+        conditions.push(sql`${menu.rating}>=4`);
       }
       let query = db
         .select({
@@ -139,12 +139,14 @@ export class MenuRepository {
         .where(and(...conditions))
         .innerJoin(categories, sql`${menu.category}=${categories.id}`)
         .innerJoin(types, sql`${menu.type}=${types.id}`)
-        .groupBy(categories.name, categories.id)
+        .groupBy(categories.name, categories.id, menu.sellingPrice)
         .$dynamic();
       if (params?.queryParams?.sortBy === "ascendingPrice") {
         query = query.orderBy(sql`${menu.sellingPrice} asc`);
+        // query = query.groupBy(menu.sellingPrice);
       } else if (params?.queryParams?.sortBy === "descendingPrice") {
         query = query.orderBy(sql`${menu.sellingPrice} desc`);
+        // query = query.groupBy(menu.sellingPrice);
       }
       const response = await query;
       // console.log(response);
