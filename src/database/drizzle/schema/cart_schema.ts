@@ -27,5 +27,14 @@ export const cart = pgTable("cart", {
     .references(() => menu.id),
   quantity: smallint("quantity").notNull().default(1),
   finalPrice: real("final_price"),
-  addOns: jsonb("add_ons").$type<{id:string, sellingPrice: number, name: string}[]>(),
+  addOns:
+    jsonb("add_ons").$type<
+      {
+        id: string;
+        sellingPrice: number;
+        name: string;
+        cuisineType: string;
+        variant: string;
+      }[]
+    >(),
 });

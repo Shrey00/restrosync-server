@@ -13,7 +13,7 @@ export class Cart {
       menuItemId,
       userId,
       quantity,
-      addOns
+      addOns,
     });
     return response;
   }

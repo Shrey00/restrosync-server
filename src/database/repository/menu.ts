@@ -166,11 +166,13 @@ export class MenuRepository {
           sellingPrice: menu.sellingPrice,
           variant: menu.variant,
           discount: menu.discount,
+          cuisineType: menu.cuisineType,
         })
         .from(menuVariants)
         .innerJoin(menu, sql`${menuVariants.variantId}=${menu.id}`)
         .where(sql`${menuVariants.mainItemId}=${params.menuItemId}`)
         .orderBy(sql`${menu.name}`);
+      console.log(response);
       return response;
     } catch (e) {
       if (e instanceof Error)

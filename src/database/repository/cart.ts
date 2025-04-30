@@ -1,11 +1,9 @@
 import db from "../connection";
 import { sql } from "drizzle-orm";
-import { MenuItemRequestBody } from "../../types";
 import { menu } from "../drizzle/schema/menu_schema";
-import { handler, AppError } from "../../utils/ErrorHandler";
-import { categories } from "../drizzle/schema/categories_schema";
+import { AppError } from "../../utils/ErrorHandler";
 import { cart } from "../drizzle/schema/cart_schema";
-import { cartRoutes } from "../../api";
+import { CartItem } from "../../types";
 export class CartRepository {
   async findCartItems(params: { userId: string; itemId: any }) {
     try {
@@ -26,20 +24,16 @@ export class CartRepository {
         .from(cart)
         .innerJoin(menu, sql`${cart.menuItemId}=${menu.id}`)
         .where(sql`${cart.userId}=${params.userId}`);
+      console.log(JSON.stringify(response, null, 2));
+
       return response;
     } catch (e) {
       if (e instanceof Error)
         throw new AppError(500, e?.message, "DB error", false);
     }
   }
-  async insertCartItem(params: {
-    userId: string;
-    menuItemId: string;
-    quantity: number;
-    addOns: { id: string; name: string; sellingPrice: number }[];
-  }) {
+  async insertCartItem(params: CartItem) {
     try {
-      console.log(params);
       const response = await db.transaction(async (txn) => {
         const itemPrice = await txn
           .select({ sellingPrice: menu.sellingPrice })
@@ -48,11 +42,11 @@ export class CartRepository {
         const insertCartItem = await txn
           .insert(cart)
           .values({
-            userId: params.userId,
-            menuItemId: params.menuItemId,
-            quantity: params.quantity,
+            userId: params.userId!,
+            menuItemId: params.menuItemId!,
+            quantity: params.quantity!,
             finalPrice: itemPrice[0].sellingPrice
-              ? itemPrice[0].sellingPrice * params.quantity
+              ? itemPrice[0].sellingPrice * params.quantity!
               : itemPrice[0].sellingPrice,
             addOns: params.addOns,
           })
