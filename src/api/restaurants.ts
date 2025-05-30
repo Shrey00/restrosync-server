@@ -12,6 +12,7 @@ const restaurants = new Restaurants();
 // Define the types for `req.files` fields
 app.post(
   "/create",
+  auth,
   restaurantUpload.fields([
     { name: "logo", maxCount: 1 },
     { name: "images", maxCount: 5 },
@@ -26,18 +27,11 @@ app.post(
     const logoPath = path.join("restaurant", logo?.filename);
     req.body.images = imagePaths ? imagePaths : [];
     req.body.logo = logoPath ? logoPath : null;
-    req.body.userId = "0f0f8456-a809-407c-9540-2cc5172aa8de";
+    req.body.userId = req.user?.id;
     const response = await restaurants.postRestaurant(req.body);
     res.status(200).json(response);
   }
 );
-
-// //:id - restaurantId
-// app.get("/:id", async (req: Request, res: Response) => {
-//   const { id } = req.params;
-//   const data = await restaurants.getRestaurant({ id });
-//   res.status(200).json(data);
-// });
 
 app.get("/list", auth, async (req: Request, res: Response) => {
   const user = req.user;
@@ -50,6 +44,13 @@ app.get("/list", auth, async (req: Request, res: Response) => {
   };
   res.status(200).json(response);
 });
+
+app.get("/:restaurantId", async (req: Request, res: Response) => {
+  const { restaurantId } = req.params;
+  const response = await restaurants.getRestaurant({ id: restaurantId });
+  res.status(200).json(response);
+});
+
 app.get("/list/:softwareId", async (req: Request, res: Response) => {
   const { softwareId } = req.params;
   const response = await restaurants.getRestaurants({ softwareId });
@@ -81,7 +82,7 @@ app.get("/active-offers", auth, async (req: Request, res: Response) => {
   const response = await restaurants.getActiveOffers();
   res.status(200).json(response);
 });
-app.post ("/apply-offer", auth, async (req: Request, res: Response) => {
+app.post("/apply-offer", auth, async (req: Request, res: Response) => {
   const response = await restaurants.getActiveOffers();
   res.status(200).json(response);
 });
@@ -103,4 +104,5 @@ app.post(
 //   const { name, city, state, rating, cuisineType, acceptingOrders } = req.query;
 //   const data = await restaurants.getSearchRestaurants({ name, city, state, rating, cuisineType, acceptingOrders });
 // });
+
 export default app;

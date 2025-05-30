@@ -2,16 +2,9 @@ import {
   pgTable,
   uuid,
   varchar,
-  char,
   text,
-  real,
-  json,
-  time,
   point,
   boolean,
-  integer,
-  smallint,
-  timestamp,
 } from "drizzle-orm/pg-core";
 
 import { users } from "./users_schema";

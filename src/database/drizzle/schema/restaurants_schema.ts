@@ -30,6 +30,7 @@ export const restaurants = pgTable("restaurants", {
   opensAt: time("opens_at"),
   closesAt: time("closes_at"),
   acceptingOrders: boolean("accepting_orders").default(false).notNull(),
+  // location: boolean("accepting_orders").default(false).notNull(),
   nextOpeningTime: time("next_opening_time"), //only to be used for temporary opening and closing of restaurants
   nextClosingTime: time("next_closing_time"), //only to be used for temporary opening and closing of restaurants
   type: varchar("type", { length: 30 }).$type<"parent" | "child">(),

@@ -10,11 +10,12 @@
 //add or delete item from a restaurant -> priviledge: Admin
 //update menu item ->priviledge: Admin
 
-import { Request, response, Response } from "express";
+import { Request, Response } from "express";
 import express from "express";
 import { Menu, Orders } from "../services";
 import { Restaurant } from "../types";
 import { auth } from "./middlewares/auth";
+import { distance } from "../utils/calculateDistance";
 import path, { format } from "path";
 import { menuUpload as upload } from "./middlewares/storage";
 import { JwtConfig, JwtPayloadData } from "../types";
@@ -139,6 +140,54 @@ app.get("/order-items", auth, async (req: Request, res: Response) => {
   const response = await orders.getOrderItems({ orderId: orderId as string });
   res.status(200).json(response);
 });
+
+interface DistanceQuery {
+  lat1: string;
+  lon1: string;
+  lat2: string;
+  lon2: string;
+}
+app.get("/delivery-details", auth, async (req: Request, res: Response) => {
+  // const { orderId } = req.query;
+  // const response = await orders.getOrderItems();
+  const MAX_DISTANCE = 20000;
+  const query = req.query as any;
+  const fromLocation: [number, number] = [
+    parseFloat(query.lat1),
+    parseFloat(query.lon1),
+  ];
+  const toLocation: [number, number] = [
+    parseFloat(query.lat2),
+    parseFloat(query.lon2),
+  ];
+
+  const distanceInMeters = distance(fromLocation, toLocation);
+  let deliveryAmount = 10;
+  if (distanceInMeters <= 2500) {
+    deliveryAmount = 10;
+  } else if (distanceInMeters <= 5000) {
+    deliveryAmount = 20;
+  } else if (distanceInMeters <= 7500) {
+    deliveryAmount = 30;
+  } else if (distanceInMeters <= 10000) {
+    deliveryAmount = 40;
+  } else if (distanceInMeters <= 15000) {
+    deliveryAmount = 50;
+  } else if (distanceInMeters <= 20000) {
+    deliveryAmount = 60;
+  } else {
+    deliveryAmount = 0;
+  }
+  const response = {
+    distance: distanceInMeters,
+    unit: "meters",
+    deliveryAvailable: distanceInMeters <= MAX_DISTANCE ? true : false,
+    deliveryAmount,
+  };
+
+  res.status(200).json(response);
+});
+
 app.patch(
   "/order-item/set-status",
   auth,
@@ -154,15 +203,12 @@ app.patch(
 // server.listen(3000, () => {
 //   console.log("Server running on http://localhost:3000");
 // });
-
-// // URL - menu/restaurantId
 // app.get("/", async (req: Request, res: Response) => {
 //   const { restaurantId } = req.body;
 //   let response = await menu.getMenuItems({ restaurantId });
 //   response = formatResponse(req.newToken, response)
 //   res.status(200).json(response);
 // });
-
 // app.patch(
 //   "/update/",
 //   auth,
@@ -175,7 +221,6 @@ app.patch(
 //     const logoPath = path.join("images", logo.filename);
 //     req.body.images = imagePaths;
 //     req.body.logo = logoPath;
-//     // req.body.userId = req.user;
 //     const data = restaurants.updateRestaurant(req.body);
 //     res.status(200).json(data);
 //   }

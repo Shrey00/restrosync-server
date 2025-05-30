@@ -67,7 +67,6 @@ export class RestaurantRepository {
     }
   }
   async findRestaurant(params: { id: string }) {
-    console.log("IS IT ME");
     const { id } = params;
     try {
       const response = await db
@@ -75,10 +74,15 @@ export class RestaurantRepository {
           id: restaurants.id,
           name: restaurants.name,
           contact: restaurants.contact,
+          email: restaurants.email,
+          description: restaurants.description,
+          images: restaurants.images,
           rating: restaurants.rating,
           address: restaurants.address,
           opensAt: restaurants.opensAt,
           closesAt: restaurants.closesAt,
+          nextOpeningTime: restaurants.opensAt,
+          nextClosingTime: restaurants.closesAt,
           logo: restaurants.logo,
           cuisineType: restaurants.cuisineType,
           acceptingOrders: restaurants.acceptingOrders,
